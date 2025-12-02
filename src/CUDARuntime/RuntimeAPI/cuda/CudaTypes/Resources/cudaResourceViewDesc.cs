@@ -6,33 +6,9 @@ namespace Hybridizer.Runtime.CUDAImports
     /// CUDA resource view descriptor
     /// </summary>
     [IntrinsicType("cudaResourceViewDesc")]
-#if PLATFORM_X86
-    [StructLayout(LayoutKind.Explicit, Size = 32)] 
-#elif PLATFORM_X64
     [StructLayout(LayoutKind.Explicit, Size = 48)]
-#else
-#error Unsupported Platform
-#endif
     public struct cudaResourceViewDesc
     {
-#if PLATFORM_X86
-        [FieldOffset(0)]
-        cudaResourceViewFormat format;
-        [FieldOffset(4)]
-        size_t width;
-        [FieldOffset(8)]
-        size_t height;
-        [FieldOffset(12)]      
-        size_t depth;
-        [FieldOffset(16)]
-        uint firstMipmapLevel;
-        [FieldOffset(20)]
-        uint lastMipmapLevel;
-        [FieldOffset(24)]
-        uint firstLayer;
-        [FieldOffset(28)]
-        uint lastLayer;
-#elif PLATFORM_X64
         /// <summary>
         /// Resource view format
         /// </summary>
@@ -73,8 +49,5 @@ namespace Hybridizer.Runtime.CUDAImports
         /// </summary>
         [FieldOffset(44)]
         uint lastlayer;
-#else
-#error Unsupported Platform
-#endif
     }
 }
