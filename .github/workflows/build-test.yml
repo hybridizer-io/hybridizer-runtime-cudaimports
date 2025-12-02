@@ -5,30 +5,28 @@ name: .NET
 
 on:
   push:
-    branches: [ "*" ]
+    branches: 
+      - '**'
   pull_request:
-    branches: [ "*" ]
+    branches:
+      - '**'
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0 # Get all history to allow automatic versioning using MinVer
+        fetch-depth: 0
+    - name: Configure Git Safe Directory
+      run: .github/install_packages.sh
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
       with:
         dotnet-version: '8.0.x'
     - name: Restore dependencies
       run: dotnet restore
-    - name: Build Release Essentials
-      run: dotnet build --no-restore --configuration Release_BasicVersion
-    - name: Test Release Essentials
-      run: dotnet test --configuration Release_BasicVersion --no-build --verbosity normal
     - name: Build Release
       run: dotnet build --no-restore --configuration Release
-    - name: Test Release Essentials
-      run: dotnet test --configuration Release_BasicVersion --no-build --verbosity normal
+    - name: Test Release
+      run: dotnet test --configuration Release --no-build --verbosity normal

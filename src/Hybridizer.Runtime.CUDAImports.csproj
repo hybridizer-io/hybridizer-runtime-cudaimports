@@ -23,27 +23,11 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <DefineConstants>$(DefineConstants);$(HybCustomConstants);TRACE;PLATFORM_X64</DefineConstants>
+    <DefineConstants>$(DefineConstants);$(HybCustomConstants);TRACE;DEBUG;PLATFORM_X64</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <WarningLevel>0</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release_BasicVersion|x64' ">
-    <DefineConstants>$(DefineConstants);$(HybCustomConstants);TRACE;PLATFORM_X64;HYBRIDIZER_BASIC;$(MonoDefines)</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <WarningLevel>0</WarningLevel>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\x64\Release_BasicVersion\Hybridizer.Runtime.CUDAImports.xml</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug_BasicVersion|x64' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DefineConstants>$(DefineConstants);$(HybCustomConstants);TRACE;PLATFORM_X64;DEBUG;HYBRIDIZER_BASIC;$(MonoDefines)</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <WarningLevel>0</WarningLevel>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <LangVersion>default</LangVersion>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
@@ -56,15 +40,9 @@
     <Description>Hybridizer.Runtime.CUDAImports.dll</Description>
     <Company>Hybridizer</Company>
     <Product>Hybridizer</Product>
-    <Copyright>Copyright %40 HYBRIDIZER 2024</Copyright>
-    <Version>2.1.6</Version>
+    <Copyright>Copyright %40 HYBRIDIZER 2025</Copyright>
+    <Version>$(VERSION)</Version>
   </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Microsoft.Win32.Registry.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Microsoft.Win32.Registry.dll" />
-  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />

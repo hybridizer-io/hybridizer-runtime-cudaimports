@@ -1,23 +1,57 @@
 
 name: publish
-on: workflow_dispatch
 
-env:
-  NuGetDirectory: ${{ github.workspace}}
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
 
 jobs:
-  main:
+  build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0 # Get all history to allow automatic versioning using MinVer
-
+        fetch-depth: 0
+        fetch-tags: true
+        token: ${{ secrets.PAT }}
+    - name: Configure Git Safe Directory
+      run: .github/install_packages.sh
+    - name: Get Next Version
+      uses: reecetech/version-increment@2024.4.3
+      id: version
+      with:
+        scheme: conventional_commits
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
-
+      with:
+        dotnet-version: '8.0.x'
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build Release
+      run: dotnet build --no-restore --configuration Release
+    - name: Test Release
+      run: dotnet test --configuration Release --no-build --verbosity normal
     - name: pack
-      run: dotnet pack -p:Configuration=Release_BasicVersion -p:Platform=x64 --output ${{ github.workspace}} ${{ github.workspace}}/src/Hybridizer.Runtime.CUDAImports.csproj
-
+      env: 
+        VERSION: ${{ steps.version.outputs.version }}
+      run: dotnet pack -p:Configuration=Release -p:Platform=x64 --output ${{ github.workspace}} ${{ github.workspace}}/src/Hybridizer.Runtime.CUDAImports.csproj
     - name: publish to nuget.org
+      env:
+        VERSION: ${{ steps.version.outputs.version }}
       run: find . -name '*.nupkg' | xargs -i dotnet nuget push {} --api-key "${{ secrets.NUGET_PUBLISH }}" --source https://api.nuget.org/v3/index.json
+    
+    - name: Create & push tag
+      run: |
+        VERSION="v${{ steps.version.outputs.version }}"
+        if git rev-parse "$VERSION" >/dev/null 2>&1; then
+          echo "Tag $VERSION already exists; nothing to do."
+          exit 0
+        fi
+        git config user.name  "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git tag -a "$VERSION" -m "chore(release): $VERSION"
+        git push origin "$VERSION"
