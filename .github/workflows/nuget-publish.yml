@@ -19,7 +19,7 @@ jobs:
         fetch-tags: true
         token: ${{ secrets.PAT }}
     - name: Configure Git Safe Directory
-      run: .github/install_packages.sh
+      run: sh -c "git config --global --add safe.directory $PWD"
     - name: Get Next Version
       uses: reecetech/version-increment@2024.4.3
       id: version

@@ -19,7 +19,7 @@ jobs:
       with:
         fetch-depth: 0
     - name: Configure Git Safe Directory
-      run: .github/install_packages.sh
+      run: sh -c "git config --global --add safe.directory $PWD"
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
       with:
