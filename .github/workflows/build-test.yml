@@ -29,4 +29,11 @@ jobs:
     - name: Build Release
       run: dotnet build --no-restore --configuration Release
     - name: Test Release
-      run: dotnet test --configuration Release --no-build --verbosity normal
+      run: dotnet test --configuration Release --no-build --verbosity normal --logger "trx;logfilename=CUDAImports.trx"
+    - name: Test Report
+      uses: dorny/test-reporter@v2
+      if: success() || failure()
+      with:
+        name: CUDAImports Tests
+        path: "tests/TestResults/CUDAImports.trx"
+        reporter: dotnet-trx
