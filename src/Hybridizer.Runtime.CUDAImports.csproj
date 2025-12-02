@@ -9,10 +9,15 @@
     <Platform>x64</Platform>
     <DefineConstants>$(DefineConstants);PLATFORM_X64</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <Platforms>x64</Platforms>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="../README.md"  Pack="true" PackagePath="\" />
+  </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DefineConstants>$(DefineConstants);$(HybCustomConstants);TRACE;DEBUG;PLATFORM_X64</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
