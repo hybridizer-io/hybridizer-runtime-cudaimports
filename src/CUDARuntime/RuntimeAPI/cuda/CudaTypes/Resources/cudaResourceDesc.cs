@@ -7,9 +7,53 @@ namespace Hybridizer.Runtime.CUDAImports
     /// CUDA resource descriptor
     /// </summary>
     [IntrinsicType("cudaResourceDesc")]
+#if PLATFORM_X86
+    [StructLayout(LayoutKind.Explicit, Size = 40)] 
+#elif PLATFORM_X64
     [StructLayout(LayoutKind.Explicit, Size = 64)]
+#else
+#error Unsupported Platform
+#endif
     public struct cudaResourceDesc
     {
+#if PLATFORM_X86
+        [FieldOffset(0)]
+        public cudaResourceType resType;
+        [FieldOffset(4)]
+        public cudaArray_t arrayStruct;
+        [FieldOffset(4)]
+        public cudaMipmappedArray_t mipmap;
+
+        [StructLayout(LayoutKind.Explicit, Size = 28)]
+        public struct cudaResourceDesc_linear
+        {
+            [FieldOffset(0)]
+            public IntPtr devPtr;
+            [FieldOffset(4)]
+            public cudaChannelFormatDesc desc ;
+            [FieldOffset(24)]
+            public size_t sizeInBytes;
+        }
+        [FieldOffset(4)]
+        public cudaResourceDesc_linear linear ;
+
+        [StructLayout(LayoutKind.Explicit, Size = 36)]
+        public struct cudaResourceDesc_pitch2D
+        {
+            [FieldOffset(0)]
+            public IntPtr devPtr;
+            [FieldOffset(4)]
+            public cudaChannelFormatDesc desc ;
+            [FieldOffset(24)]
+            public size_t width;
+            [FieldOffset(28)]
+            public size_t height;
+            [FieldOffset(32)]
+            public size_t pitchInBytes;
+        }
+        [FieldOffset(4)]
+        public cudaResourceDesc_pitch2D pitch2D;
+#elif PLATFORM_X64
         /// <summary>
         /// Resource type
         /// </summary>
@@ -91,5 +135,8 @@ namespace Hybridizer.Runtime.CUDAImports
         /// </summary>
         [FieldOffset(8)]
         public cudaResourceDesc_pitch2D pitch2D;
+#else
+#error Unsupported Platform
+#endif
     }
 }

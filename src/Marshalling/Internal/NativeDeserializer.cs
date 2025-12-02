@@ -83,7 +83,7 @@ namespace Hybridizer.Runtime.CUDAImports
                     if (typeof (ICustomMarshalled).IsAssignableFrom(type))
                     {
                         // get size
-                        int size = FieldTools.SizeOf(param.GetType());
+                        long size = FieldTools.SizeOf(param.GetType());
                         byte[] data = new byte[size];
                         DeserializeRawData(data, da, size);
                         (param as ICustomMarshalled).UnmarshalFrom(new BinaryReader(new MemoryStream(data, false)), this.serState.nativePtrConverter.Flavor);
@@ -121,7 +121,7 @@ namespace Hybridizer.Runtime.CUDAImports
 
             protected abstract void DeserializeArray(object param, IntPtr da, Type type);
 
-            protected abstract void DeserializeRawData(byte[] data, IntPtr da, int size);
+            protected abstract void DeserializeRawData(byte[] data, IntPtr da, long size);
         }
     }
 }

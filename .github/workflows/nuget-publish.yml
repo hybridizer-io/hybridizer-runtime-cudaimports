@@ -9,12 +9,12 @@ jobs:
   main:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0 # Get all history to allow automatic versioning using MinVer
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v5
 
     - name: pack
       run: dotnet pack -p:Configuration=Release_BasicVersion -p:Platform=x64 --output ${{ github.workspace}} ${{ github.workspace}}/src/Hybridizer.Runtime.CUDAImports.csproj

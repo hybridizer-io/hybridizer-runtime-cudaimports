@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Hybridizer.Runtime.CUDAImports": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

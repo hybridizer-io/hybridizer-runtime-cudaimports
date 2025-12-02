@@ -53,7 +53,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 bw.Write(o);
             }
 
-            protected override void HandlePaddingByte(int count)
+            protected override void HandlePaddingByte(long count)
             {
                 bw.Write(new byte[count]);
             }

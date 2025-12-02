@@ -119,7 +119,6 @@ namespace Hybridizer.Runtime.CUDAImports
 
         AssemblyBuilder assembly;
         ModuleBuilder module;
-
         Dictionary<HybridizerFlavor, Dictionary<Type, Type>> wrappedTypes = new Dictionary<HybridizerFlavor, Dictionary<Type, Type>>();
 
         Type hyb_occupancy_del;
@@ -174,10 +173,11 @@ namespace Hybridizer.Runtime.CUDAImports
             _flavor = flavor;
             if (flavor == HybridizerFlavor.AVX || flavor == HybridizerFlavor.AVX512 || flavor == HybridizerFlavor.PHI)
                 _blockDimX = 32;
-            if (flavor == HybridizerFlavor.CUDA && TdrDetection.IsTdrEnabled() && TdrDetection.TdrDelay() > 0)
-            {
-                Console.Out.WriteLine("[WARNING] : TDR mode is activated with a {0} seconds delay. Kernels taking more than that will timeout and driver will recover", TdrDetection.TdrDelay());
-            }
+            // deactivated as registries are a mess with different version of dotnet 
+            //if (flavor == HybridizerFlavor.CUDA && TdrDetection.IsTdrEnabled() && TdrDetection.TdrDelay() > 0)
+            //{
+            //    Console.Out.WriteLine("[WARNING] : TDR mode is activated with a {0} seconds delay. Kernels taking more than that will timeout and driver will recover", TdrDetection.TdrDelay());
+            //}
         }
 
         /// <summary>
@@ -331,11 +331,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 if (!wrappedTypes[_flavor].TryGetValue(originalType, out t))
                 {
                     TypeBuilder tb = GenerateWrappedType(originalType);
-#if NETSTANDARD2_0
                     t = tb.CreateTypeInfo();
-#else
-                    t = tb.CreateType();
-#endif
                     wrappedTypes[_flavor][originalType] = t;
                 }
             }
@@ -430,7 +426,9 @@ namespace Hybridizer.Runtime.CUDAImports
         /// <returns></returns>
         public static HybRunner OMP(string dllName)
         {
-            return new HybRunner(dllName, HybridizerFlavor.OMP, MainMemoryMarshaler.Create(HybridizerFlavor.OMP));
+            var result = new HybRunner(dllName, HybridizerFlavor.OMP, MainMemoryMarshaler.Create(HybridizerFlavor.OMP));
+            result.SetDistrib(1, Environment.ProcessorCount);
+            return result;
         }
 
         /// <summary>
@@ -514,7 +512,7 @@ namespace Hybridizer.Runtime.CUDAImports
         /// <returns>The appropriate HybRunner</returns>
         public static HybRunner AutoCPU()
         {
-            if (!KernelInteropTools.IsLinux.Value)
+            if (!KernelInteropTools.IsLinux)
             {
                 throw new NotImplementedException("auto cpu hybrunner is not yet implemented on windows");
             }
@@ -595,8 +593,6 @@ namespace Hybridizer.Runtime.CUDAImports
         public HybRunner SetDistrib(int gridDimX, int gridDimY, int blockDimX, int blockDimY, int blockDimZ, int shared)
         {   
             if (_flavor == HybridizerFlavor.AVX && (gridDimY != 1 || blockDimX != 32 || blockDimY != 1 || blockDimZ != 1))
-                throw new ApplicationException("Invalid work distributions parameters");
-            if (_flavor == HybridizerFlavor.OMP && (gridDimX != 1 || gridDimY != 1 || blockDimX != 1 || blockDimY != 1 || blockDimZ != 1))
                 throw new ApplicationException("Invalid work distributions parameters");
 
             _gridDimX = gridDimX;
@@ -812,14 +808,17 @@ namespace Hybridizer.Runtime.CUDAImports
                     MethodInfo toWrap = mi;
                     List<Type> nativeParameters = new List<Type>(); // Parameters of DLL exported function
                     List<Type> wrappedParams = new List<Type>(toWrap.GetParameters().Length); // Parameters of wrapped function
+                    if(_flavor == HybridizerFlavor.OMP) {
+                        nativeParameters.Add(typeof(int));
+                    }
                     if (_marshaller is CudaMarshaler)
                     {
-                        nativeParameters.Add(typeof(int));
-                        nativeParameters.Add(typeof(int));
-                        nativeParameters.Add(typeof(int));
-                        nativeParameters.Add(typeof(int));
-                        nativeParameters.Add(typeof(int));
-                        nativeParameters.Add(typeof(int));
+                        nativeParameters.Add(typeof(int)); // griddim_x
+                        nativeParameters.Add(typeof(int)); // griddim_y
+                        nativeParameters.Add(typeof(int)); // blockDim_x
+                        nativeParameters.Add(typeof(int)); // blockdim_y
+                        nativeParameters.Add(typeof(int)); // blockdim_z
+                        nativeParameters.Add(typeof(int)); // shared
                     }
 
                     if (!toWrap.IsStatic)
@@ -1173,6 +1172,11 @@ namespace Hybridizer.Runtime.CUDAImports
                 ilgen.Emit(OpCodes.Ldfld, runtimeField);
                 ilgen.Emit(OpCodes.Call, typeof(HybRunner).GetProperty("Shared", bindingFlags).GetGetMethod());
             }
+            if(_flavor == HybridizerFlavor.OMP) {
+                ilgen.Emit(OpCodes.Ldarg_0);
+                ilgen.Emit(OpCodes.Ldfld, runtimeField);
+                ilgen.Emit(OpCodes.Call, typeof(HybRunner).GetProperty("BlockDimX", bindingFlags).GetGetMethod());
+            }
         }
 
         private void CallNativeMethod(ILGenerator ilgen, FieldInfo runtimeField, BindingFlags bindingFlags, MethodInfo toWrap, MethodInfo marshallerGetter, FieldInfo wrappedObject, List<Type> wrappedParams, MethodBuilder nativeMetod, MethodBuilder nativeMethodStream, MethodBuilder nativeMethodStreamGridSync, MethodBuilder nativeMethodGridSync, LocalBuilder result)
@@ -1245,23 +1249,24 @@ namespace Hybridizer.Runtime.CUDAImports
             ilgen.Emit(OpCodes.Ldfld, runtimeField);
             ilgen.Emit(OpCodes.Call, typeof(HybRunner).GetProperty("LastKernelDuration", bindingFlags).GetGetMethod());
             ilgen.Emit(OpCodes.Call, typeof(Stopwatch).GetMethod("Stop"));
-            if (_marshaller is CudaMarshaler && TdrDetection.IsTdrEnabled())
-            {
-                Label noTimeoutLabel = ilgen.DefineLabel();
-                ilgen.Emit(OpCodes.Ldarg_0);
-                ilgen.Emit(OpCodes.Ldfld, runtimeField);
-                ilgen.Emit(OpCodes.Call, typeof(HybRunner).GetProperty("LastKernelDuration", bindingFlags).GetGetMethod());
-                ilgen.Emit(OpCodes.Call, typeof(Stopwatch).GetProperty("ElapsedMilliseconds", bindingFlags).GetGetMethod());
-                ilgen.Emit(OpCodes.Conv_R8);
-                ilgen.Emit(OpCodes.Ldc_R8, TdrDetection.TdrDelay() * 1000.0);
-                ilgen.Emit(OpCodes.Cgt);
-                LocalBuilder tmp = ilgen.DeclareLocal(typeof(bool));
-                ilgen.Emit(OpCodes.Stloc, tmp);
-                ilgen.Emit(OpCodes.Ldloc, tmp);
-                ilgen.Emit(OpCodes.Brfalse, noTimeoutLabel);
-                ilgen.EmitWriteLine(String.Format("[WARNING] Last kernel took more than TDR delay : {0} seconds", TdrDetection.TdrDelay()));
-                ilgen.MarkLabel(noTimeoutLabel);
-            }
+            // deactivated as registries are a mess with new dotnet versions (standard)
+            //if (_marshaller is CudaMarshaler && TdrDetection.IsTdrEnabled())
+            //{
+            //    Label noTimeoutLabel = ilgen.DefineLabel();
+            //    ilgen.Emit(OpCodes.Ldarg_0);
+            //    ilgen.Emit(OpCodes.Ldfld, runtimeField);
+            //    ilgen.Emit(OpCodes.Call, typeof(HybRunner).GetProperty("LastKernelDuration", bindingFlags).GetGetMethod());
+            //    ilgen.Emit(OpCodes.Call, typeof(Stopwatch).GetProperty("ElapsedMilliseconds", bindingFlags).GetGetMethod());
+            //    ilgen.Emit(OpCodes.Conv_R8);
+            //    ilgen.Emit(OpCodes.Ldc_R8, TdrDetection.TdrDelay() * 1000.0);
+            //    ilgen.Emit(OpCodes.Cgt);
+            //    LocalBuilder tmp = ilgen.DeclareLocal(typeof(bool));
+            //    ilgen.Emit(OpCodes.Stloc, tmp);
+            //    ilgen.Emit(OpCodes.Ldloc, tmp);
+            //    ilgen.Emit(OpCodes.Brfalse, noTimeoutLabel);
+            //    ilgen.EmitWriteLine(String.Format("[WARNING] Last kernel took more than TDR delay : {0} seconds", TdrDetection.TdrDelay()));
+            //    ilgen.MarkLabel(noTimeoutLabel);
+            //}
         }
 
         private static bool IsDelegateType(Type type)
@@ -1273,6 +1278,7 @@ namespace Hybridizer.Runtime.CUDAImports
             MethodInfo marshallerGetter, FieldInfo wrappedObject, List<Type> wrappedParams)
         {
             int argIdx = 0;
+            // marshal this
             if (!toWrap.IsStatic)
             {
                 generator.Emit(OpCodes.Ldarg_0);
@@ -1284,9 +1290,9 @@ namespace Hybridizer.Runtime.CUDAImports
             }
             argIdx++;
 
-            foreach (Type pi in wrappedParams)
+            foreach (Type parameterType in wrappedParams)
             {
-                if (IsDelegateType(pi))
+                if (IsDelegateType(parameterType))
                 {
                     // Convert to HandleDelegate
                     generator.Emit(OpCodes.Ldarg_0);
@@ -1295,8 +1301,8 @@ namespace Hybridizer.Runtime.CUDAImports
                     generator.Emit(OpCodes.Ldarg, argIdx++);
                     generator.Emit(OpCodes.Call, getHandleDelegate);
                 }
-                else if (pi.IsClass || pi.IsInterface ||
-                    (typeof(ICustomMarshalled).IsAssignableFrom(pi) && pi.IsValueType)
+                else if (parameterType.IsClass || parameterType.IsInterface ||
+                    (typeof(ICustomMarshalled).IsAssignableFrom(parameterType) && parameterType.IsValueType)
                     )
                 {
                     generator.Emit(OpCodes.Ldarg_0);
@@ -1345,19 +1351,19 @@ namespace Hybridizer.Runtime.CUDAImports
             MethodBuilder result = tb.DefineMethod(symbolName, methodAttributes, callingConvention, typeof(int), parameters);
             var attrType = typeof(DllImportAttribute);
             var attrBuilder = new CustomAttributeBuilder(attrType.GetConstructor(new Type[] { typeof(string) }),
-                new object[1] { _dllName }
-             );
+                new object[1] { _dllName });
+                //new[]
+                //{
+                //    attrType.GetProperty("CallingConvention"),
+                //    attrType.GetProperty("CharSet")
+                //},
+                //new object[]
+                //{
+                //    CallingConvention.Cdecl,
+                //    CharSet.Ansi
+                //});
             result.SetCustomAttribute(attrBuilder);
             return result;
-        }
-
-        /// <summary>
-        /// INTERNAL METHOD - For debugging only
-        /// </summary>
-        /// <param name="name">name : example.dll</param>
-        public void saveAssembly(string name = "HybridizerHybRunner_Generated.dll")
-        {
-            //assembly.Save(name);
         }
     }
 }

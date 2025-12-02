@@ -69,7 +69,7 @@ namespace Hybridizer.Runtime.CUDAImports
         /// <summary>
         /// constructor from 2 individual 32 bits floats
         /// </summary>
-        private float2(float xx, float yy)
+        public float2(float xx, float yy)
         {
             x = xx;
             y = yy;

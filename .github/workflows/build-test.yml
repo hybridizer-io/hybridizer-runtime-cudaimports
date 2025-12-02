@@ -5,9 +5,9 @@ name: .NET
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "*" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "*" ]
 
 jobs:
   build:
@@ -15,13 +15,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0 # Get all history to allow automatic versioning using MinVer
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: 7.0.x
+        dotnet-version: '8.0.x'
     - name: Restore dependencies
       run: dotnet restore
     - name: Build Release Essentials

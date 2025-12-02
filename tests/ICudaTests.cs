@@ -1,27 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
 
 namespace Hybridizer.Runtime.CUDAImports.Tests
 {
-    class ICudaTests
-    {
-        [Test]
-        [Ignore("can't run in CI yet -- depends on CUDA runtime")]
-        public void TestGetErrorString()
-        {
-            // Just make sure that we can get the appropriate error messages
-            for (int i = 0; i < 150; i++)
-            {
-                Console.WriteLine(cuda.GetErrorString((cudaError_t)i));
-            }
+    // class ICudaTests
+    // {
+    //     [Test]
+    //     public void TestGetErrorString()
+    //     {
+    //         // Just make sure that we can get the appropriate error messages
+    //         for (int i = 0; i < 150; i++)
+    //         {
+    //             Console.WriteLine(cuda.GetErrorString((cudaError_t)i));
+    //         }
 
-            // Check a few well-known error codes
-            Assert.AreEqual("no error", cuda.GetErrorString((cudaError_t)0));
-            Assert.AreEqual("driver shutting down", cuda.GetErrorString((cudaError_t)4));
-            Assert.AreEqual("memory size or pointer value too large to fit in 32 bit", cuda.GetErrorString((cudaError_t)32));
-        }
-    }
+    //         // Check a few well-known error codes
+    //         Assert.That(cuda.GetErrorString((cudaError_t)0), Is.EqualTo("no error"));
+    //         Assert.That(cuda.GetErrorString((cudaError_t)4), Is.EqualTo("unspecified launch failure"));
+    //         Assert.That(cuda.GetErrorString((cudaError_t)32), Is.EqualTo("memory size or pointer value too large to fit in 32 bit"));
+    //     }
+    // }
 }
