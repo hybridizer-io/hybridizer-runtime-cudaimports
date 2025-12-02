@@ -46,10 +46,10 @@ jobs:
       env: 
         VERSION: ${{ steps.version.outputs.version }}
       run: dotnet pack -p:Configuration=Release -p:Platform=x64 --output ${{ github.workspace}} ${{ github.workspace}}/src/Hybridizer.Runtime.CUDAImports.csproj
-    # - name: publish to nuget.org
-    #   env:
-    #     VERSION: ${{ steps.version.outputs.version }}
-    #   run: find . -name '*.nupkg' | xargs -i dotnet nuget push {} --api-key "${{ secrets.NUGET_PUBLISH }}" --source https://api.nuget.org/v3/index.json
+    - name: publish to nuget.org
+      env:
+        VERSION: ${{ steps.version.outputs.version }}
+      run: dotnet nuget push "Hybridizer.Runtime.CUDAImports.$VERSION.nupkg" --api-key "${{ secrets.NUGET_PUBLISH }}" --source https://api.nuget.org/v3/index.json
     
     - name: Create & push tag
       run: |
