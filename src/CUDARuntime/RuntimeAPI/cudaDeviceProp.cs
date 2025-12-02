@@ -333,8 +333,69 @@ namespace Hybridizer.Runtime.CUDAImports
         /// <summary>
         /// Shared memory reserved by CUDA driver per block in bytes
         /// </summary>
-        public size_t reservedSharedMemPerBlock; 
+        public size_t reservedSharedMemPerBlock;
 
+        // 12
+        /// <summary>
+        /// Device supports host memory registration via ::cudaHostRegister.
+        /// </summary>
+        public int hostRegisterSupported;
+        /// <summary>
+        /// 1 if the device supports sparse CUDA arrays and sparse CUDA mipmapped arrays, 0 otherwise
+        /// </summary>
+        public int sparseCudaArraySupported;
+        /// <summary>
+        ///  Device supports using the ::cudaHostRegister flag cudaHostRegisterReadOnly to register memory that must be mapped as read-only to the GPU
+        /// </summary>
+        public int hostRegisterReadOnlySupported;
+        /// <summary>
+        /// External timeline semaphore interop is supported on the device
+        /// </summary>
+        public int timelineSemaphoreInteropSupported;
+        /// <summary>
+        /// 1 if the device supports using the cudaMallocAsync and cudaMemPool family of APIs, 0 otherwise
+        /// </summary>
+        public int memoryPoolsSupported;
+        /// <summary>
+        /// 1 if the device supports GPUDirect RDMA APIs, 0 otherwise
+        /// </summary>
+        public int gpuDirectRDMASupported;
+        /// <summary>
+        /// Bitmask to be interpreted according to the ::cudaFlushGPUDirectRDMAWritesOptions enum
+        /// </summary>
+        public uint gpuDirectRDMAFlushWritesOptions;
+        /// <summary>
+        /// See the ::cudaGPUDirectRDMAWritesOrdering enum for numerical values
+        /// </summary>
+        public int gpuDirectRDMAWritesOrdering;
+        /// <summary>
+        /// Bitmask of handle types supported with mempool-based IPC
+        /// </summary>
+        public int memoryPoolSupportedHandleTypes;
+        /// <summary>
+        /// 1 if the device supports deferred mapping CUDA arrays and CUDA mipmapped arrays
+        /// </summary>
+        public int deferredMappingCudaArraySupported;
+        /// <summary>
+        /// Device supports IPC Events.
+        /// </summary>
+        public int ipcEventSupported;
+        /// <summary>
+        /// Indicates device supports cluster launch
+        /// </summary>
+        public int clusterLaunch;
+        /// <summary>
+        /// Indicates device supports unified pointers
+        /// </summary>
+        public int unifiedFunctionPointers;
+        /// <summary>
+        /// Reserved for future use
+        /// </summary>
+        public int[] reserved2;
+        /// <summary>
+        /// Reserved for future use
+        /// </summary>
+        public int[] reserved;
 
         /// <summary>
         /// get cuda core count
@@ -369,13 +430,15 @@ namespace Hybridizer.Runtime.CUDAImports
                     {
                         return 64 * mp;
                     }
-                    else if (minor == 6)
+                    else if (minor == 6 || minor == 7 || minor == 9)
                     {
-                        return 123 * mp;
+                        return 128 * mp;
                     }
                     else
                         Console.Error.WriteLine("Unknown device type");
                     break;
+                case 9: // https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#compute-capability-9-0
+                    return 128 * mp;
                 default:
                     Console.Error.WriteLine("Unknown device type");
                     break;

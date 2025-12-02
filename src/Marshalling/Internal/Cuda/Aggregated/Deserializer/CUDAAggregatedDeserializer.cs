@@ -33,7 +33,7 @@ namespace Hybridizer.Runtime.CUDAImports
 
             }
 
-            protected override void DeserializeRawData(byte[] data, IntPtr da, int size)
+            protected override void DeserializeRawData(byte[] data, IntPtr da, long size)
             {
                 var gcHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
                 state.CudaMemCopy(Marshal.UnsafeAddrOfPinnedArrayElement(data, 0), da, size, cudaMemcpyKind.cudaMemcpyDeviceToHost, gcHandle, false, true);

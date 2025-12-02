@@ -1,14 +1,13 @@
-﻿using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Diagnostics;
-using System.Linq;
+using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
+using Microsoft.Win32;
 
 namespace Hybridizer.Runtime.CUDAImports
 {
-    internal static class TdrDetection
+    public static class TdrDetection
     {
         static ITdrRegistries _tdrRegistries = TdrRegistriesFactory.GetInstance();
 
@@ -96,20 +95,28 @@ namespace Hybridizer.Runtime.CUDAImports
 
     internal class WindowsTdrRegistries : ITdrRegistries
     {
-        bool is64BitProcess;
-        bool is64BitOperatingSystem;
+        Assembly registryAssembly;
 
         public WindowsTdrRegistries()
         {
-            is64BitProcess = (IntPtr.Size == 8);
-            is64BitOperatingSystem = is64BitProcess || InternalCheckIsWow64();
+            if (IntPtr.Size != 8)
+            {
+                throw new PlatformNotSupportedException("Hybridizer dropped 32 bits support (as always should and will in desktop/server environments)");
+            }
+
+            using (Stream resource = Assembly.GetExecutingAssembly().GetManifestResourceStream("Hybridizer.Runtime.CUDAImports.Microsoft.Win32.Registry.dll"))
+            {
+                byte[] bytes = new byte[resource.Length];
+                resource.Read(bytes, 0, bytes.Length);
+                registryAssembly = Assembly.Load(bytes);
+            }
         }
 
         public int TdrLevel
         {
             get
             {
-                return getRegistryKey(RegistryHive.LocalMachine, "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", "TdrLevel");
+                return getRegistryKey("SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", "TdrLevel");
             }
         }
 
@@ -117,20 +124,29 @@ namespace Hybridizer.Runtime.CUDAImports
         {
             get
             {
-                return getRegistryKey(RegistryHive.LocalMachine, "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", "TdrDelay");
+                return getRegistryKey( "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", "TdrDelay");
             }
         }
 
-        private int getRegistryKey(RegistryHive hive, string path, string name) 
+        private int getRegistryKey(string path, string name) 
         {
-            using (RegistryKey baseKey = RegistryKey.OpenBaseKey(hive, is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32))
+            Type registryType = registryAssembly.GetType("Microsoft.Win32.Registry");
+            Type registryKeyType = registryAssembly.GetType("Microsoft.Win32.Registry");
+            registryType.TypeInitializer.Invoke(null, null);
+            using (var localMachine = registryType
+                .GetField("LocalMachine", BindingFlags.Static | BindingFlags.Public)
+                .GetValue(null) as IDisposable)
             {
-                using (RegistryKey subKey = baseKey.OpenSubKey(path, false))
+                using (var baseKey = registryKeyType
+                    .GetMethod("OpenSubKey", new Type[] { typeof(string), typeof(bool) })
+                    .Invoke(registryKeyType, new object[] { path, false }) as IDisposable)
                 {
-                    if (subKey != null)
+                    if(baseKey != null)
                     {
-                        object keyValue = subKey.GetValue(name);
-                        if (keyValue is int)
+                        var keyValue = registryKeyType
+                            .GetMethod("GetValue", new Type[] { typeof(string) })
+                            .Invoke(baseKey, new object[] { name });
+                        if(keyValue is int)
                         {
                             return (int) keyValue;
                         }
@@ -139,34 +155,22 @@ namespace Hybridizer.Runtime.CUDAImports
                     return -1;
                 }
             }
-        }
+            //using (RegistryKey baseKey = RegistryKey.OpenBaseKey(localMachine, is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32))
+            //{
+            //    using (RegistryKey subKey = baseKey.OpenSubKey(path, false))
+            //    {
+            //        if (subKey != null)
+            //        {
+            //            object keyValue = subKey.GetValue(name);
+            //            if (keyValue is int)
+            //            {
+            //                return (int)keyValue;
+            //            }
+            //        }
 
-        [DllImport("kernel32.dll", SetLastError = true, CallingConvention = CallingConvention.Winapi)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool IsWow64Process(
-            [In] IntPtr hProcess,
-            [Out] out bool wow64Process
-        );
-
-        public static bool InternalCheckIsWow64()
-        {
-            if ((Environment.OSVersion.Version.Major == 5 && Environment.OSVersion.Version.Minor >= 1) ||
-                Environment.OSVersion.Version.Major >= 6)
-            {
-                using (Process p = Process.GetCurrentProcess())
-                {
-                    bool retVal;
-                    if (!IsWow64Process(p.Handle, out retVal))
-                    {
-                        return false;
-                    }
-                    return retVal;
-                }
-            }
-            else
-            {
-                return false;
-            }
+            //        return -1;
+            //    }
+            //}
         }
     }
 }

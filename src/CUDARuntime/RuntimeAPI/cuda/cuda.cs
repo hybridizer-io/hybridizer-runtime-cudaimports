@@ -1,7 +1,7 @@
 ﻿/* (c) ALTIMESH 2018 -- all rights reserved */
 using System;
 using System.Collections.Generic;
-using System.Configuration;
+//using System.Configuration;
 using System.Diagnostics;
 using System.Text;
 using System.Runtime.InteropServices;
@@ -63,25 +63,12 @@ namespace Hybridizer.Runtime.CUDAImports
 
         private static readonly Dictionary<string, string[]> CUDA_DLLS = new Dictionary<string, string[]>
         {
-            #if MONO
-            { "80", new[] {Cuda_64_80.CUDARTDLL, Cuda_32_80.CUDARTDLL} },
-            #else
-            { "55",  new[] { Cuda_64_55.CUDARTDLL,  Cuda_32_55.CUDARTDLL} }, 
-            { "60",  new[] { Cuda_64_60.CUDARTDLL,  Cuda_32_60.CUDARTDLL} },
-            { "65",  new[] { Cuda_64_65.CUDARTDLL,  Cuda_32_65.CUDARTDLL} },
-            { "70",  new[] { Cuda_64_70.CUDARTDLL,  Cuda_32_70.CUDARTDLL} },
-            { "75",  new[] { Cuda_64_75.CUDARTDLL,  Cuda_32_75.CUDARTDLL} },
-            { "80",  new[] { Cuda_64_80.CUDARTDLL,  Cuda_32_80.CUDARTDLL} },
-            { "90",  new[] { Cuda_64_90.CUDARTDLL,  Cuda_32_90.CUDARTDLL} },
-            { "91",  new[] { Cuda_64_91.CUDARTDLL,  Cuda_32_91.CUDARTDLL} },
-            { "92",  new[] { Cuda_64_92.CUDARTDLL,  Cuda_32_92.CUDARTDLL} },
-            { "100", new[] { Cuda_64_100.CUDARTDLL, Cuda_32_100.CUDARTDLL} },
-            { "101", new[] { Cuda_64_101.CUDARTDLL } },
-            { "110", new[] { Cuda_64_110.CUDARTDLL } },
-            { "116", new[] { Cuda_64_110.CUDARTDLL } },
-            { "117", new[] { Cuda_64_110.CUDARTDLL } },
-            #endif
-
+            { "110", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_110_linux.CUDARTDLL : Cuda_64_110_windows.CUDARTDLL } },
+            { "114", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_114_linux.CUDARTDLL : Cuda_64_114_windows.CUDARTDLL } },
+            { "120", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_120_linux.CUDARTDLL : Cuda_64_120_windows.CUDARTDLL } },
+            { "124", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_124_linux.CUDARTDLL : Cuda_64_124_windows.CUDARTDLL } },
+            { "126", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_126_linux.CUDARTDLL : Cuda_64_126_windows.CUDARTDLL } },
+            { "130", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_130_linux.CUDARTDLL : Cuda_64_130_windows.CUDARTDLL } }
         };
 
         /// <summary>
@@ -107,37 +94,23 @@ namespace Hybridizer.Runtime.CUDAImports
                             return k;
             
             string cudaVersion = String.Empty;
-#if HYBRIDIZER_CUDA_VERSION_110
+#if HYBRIDIZER_CUDA_VERSION_130
+            cudaVersion = "130";
+#elif HYBRIDIZER_CUDA_VERSION_126
+            cudaVersion = "126";
+#elif HYBRIDIZER_CUDA_VERSION_124
+            cudaVersion = "124";
+#elif HYBRIDIZER_CUDA_VERSION_114
+            cudaVersion = "114";
+#elif HYBRIDIZER_CUDA_VERSION_110
             cudaVersion = "110";
-#elif HYBRIDIZER_CUDA_VERSION_101
-            cudaVersion = "101";
-#elif HYBRIDIZER_CUDA_VERSION_100
-            cudaVersion = "100";
-#elif HYBRIDIZER_CUDA_VERSION_92
-            cudaVersion = "92";
-#elif HYBRIDIZER_CUDA_VERSION_91
-            cudaVersion = "91";
-#elif HYBRIDIZER_CUDA_VERSION_90
-            cudaVersion = "90";
-#elif HYBRIDIZER_CUDA_VERSION_80
-            cudaVersion = "80";
-#elif HYBRIDIZER_CUDA_VERSION_75
-            cudaVersion = "75";
-#elif HYBRIDIZER_CUDA_VERSION_70
-            cudaVersion = "70";
-#elif HYBRIDIZER_CUDA_VERSION_65
-            cudaVersion = "65";
-#elif HYBRIDIZER_CUDA_VERSION_60
-            cudaVersion = "60";
-#elif HYBRIDIZER_CUDA_VERSION_55
-            cudaVersion = "55";
 #endif
             try
             {
-                if (String.IsNullOrWhiteSpace(cudaVersion))
-                {
-                    cudaVersion = ConfigurationManager.AppSettings["hybridizer.cudaruntimeversion"];
-                }
+                // if (String.IsNullOrWhiteSpace(cudaVersion))
+                // {
+                //     cudaVersion = ConfigurationManager.AppSettings["hybridizer.cudaruntimeversion"];
+                // }
             }
             catch (Exception e)
             {
@@ -157,7 +130,7 @@ namespace Hybridizer.Runtime.CUDAImports
 
             // Otherwise default to latest version
             if (String.IsNullOrWhiteSpace(cudaVersion)) 
-                cudaVersion = "80";
+                cudaVersion = "130";
             cudaVersion = cudaVersion.Replace(".", ""); // Remove all dots ("7.5" will be understood "75")
             
             if (s_VERBOSITY != VERBOSITY.None)
@@ -171,55 +144,31 @@ namespace Hybridizer.Runtime.CUDAImports
         {
             // read verbosity from file
             string cudaVersion = GetCudaVersion();
+            
+            if (IntPtr.Size != 8)
+                throw new NotSupportedException("cuda dropped 32 bits support since version 11");
             switch (cudaVersion)
             {
-               
-                case "55":
-                    instance = (IntPtr.Size == 8) ? new Cuda_64_55() : (ICuda)new Cuda_32_55();
-                    break;
-                case "60":
-                    instance = (IntPtr.Size == 8) ? new Cuda_64_60() : (ICuda)new Cuda_32_60();
-                    break;
-                case "65":
-                    instance = (IntPtr.Size == 8) ? new Cuda_64_65() : (ICuda)new Cuda_32_65();
-                    break;
-                case "70":
-                    instance = (IntPtr.Size == 8) ? new Cuda_64_70() : (ICuda)new Cuda_32_70();
-                    break;
-                case "75":
-                    instance = (IntPtr.Size == 8) ? new Cuda_64_75() : (ICuda)new Cuda_32_75();
-                    break;
-                case "80":
-                    instance = (IntPtr.Size == 8) ? new Cuda_64_80() : (ICuda)new Cuda_32_80();
-                    break;
-                case "90":
-                    instance = (IntPtr.Size == 8) ? new Cuda_64_90() : (ICuda)new Cuda_32_90();
-                    break;
-                case "91":
-                    instance = (IntPtr.Size == 8) ? new Cuda_64_91() : (ICuda)new Cuda_32_91();
-                    break;
-                case "92":
-                    instance = (IntPtr.Size == 8) ? new Cuda_64_92() : (ICuda)new Cuda_32_92();
-                    break;
-                case "100":
-                    instance = (IntPtr.Size == 8) ? new Cuda_64_100() : (ICuda)new Cuda_32_100();
-                    break;
-                case "101":
-                    if (IntPtr.Size == 8)
-                        instance = new Cuda_64_101();
-                    else
-                        throw new NotSupportedException("cuda 10.1 dropped 32 bits support");
-                    break;
                 case "110":
-                case "116":
-                case "117":
-                    if (IntPtr.Size == 8)
-                        instance = new Cuda_64_110();
-                    else
-                        throw new NotSupportedException("cuda 11.0 dropped 32 bits support");
+                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? new Cuda_64_110_linux() : new Cuda_64_110_windows();
+                    break;
+                case "114":
+                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? new Cuda_64_114_linux() : new Cuda_64_114_windows();
+                    break;
+                case "120":
+                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? new Cuda_64_120_linux() : new Cuda_64_120_windows();
+                    break;
+                case "124":
+                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? new Cuda_64_124_linux() : new Cuda_64_124_windows();
+                    break;
+                case "126":
+                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? new Cuda_64_126_linux() : new Cuda_64_126_windows();
+                    break;
+                case "130":
+                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? new Cuda_64_130_linux() : new Cuda_64_130_windows();
                     break;
                 default:
-                    throw new ApplicationException(string.Format("Unknown version of Cuda {0}", cudaVersion));
+                    throw new ApplicationException(string.Format("Unsupported version of Cuda {0}", cudaVersion));
             }
         }
 

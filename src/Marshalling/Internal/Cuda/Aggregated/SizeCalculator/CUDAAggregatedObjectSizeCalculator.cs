@@ -34,7 +34,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 s.addSize(8);
             }
 
-            protected override void HandlePaddingByte(int count)
+            protected override void HandlePaddingByte(long count)
             {
                 s.addSize(count);
             }

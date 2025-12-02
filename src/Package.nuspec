@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>Hybridizer.Runtime.CUDAImports</id>
+    <version>$(VERSION)</version>
+    <authors>Hybridizer</authors>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <description>CUDA runtime and driver API</description>
+    <summary>
+      Provides CUDA runtime/driver API wrappers and necessary tools to interop with Hybridizer
+    </summary>
+    <releaseNotes>Added CUDA 12+</releaseNotes>
+    <copyright>$copyright$</copyright>
+    <tags>C# CUDA .Net MSIL</tags>
+    <language>C#</language>
+  </metadata>
+</package>

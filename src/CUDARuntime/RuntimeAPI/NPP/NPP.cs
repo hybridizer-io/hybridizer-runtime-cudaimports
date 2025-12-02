@@ -12,11 +12,22 @@ namespace Hybridizer.Runtime.CUDAImports
             var version = GetCudaVersion();
             switch (version)
             {
+                case "122":
+                case "121":
+                case "120":
+                    if (IntPtr.Size == 8)
+                        instance = new NPPI_12_0();
+                    else
+                        throw new NotSupportedException("nppi 11 dropped 32 bits support");
+                    break;
+                case "117":
+                case "116":
+                case "114":
                 case "110":
                     if (IntPtr.Size == 8)
                         instance = new NPPI_11_0();
                     else
-                        throw new NotSupportedException("cublas 11 dropped 32 bits support");
+                        throw new NotSupportedException("nppi 11 dropped 32 bits support");
                     break;
                 case "101":
                     if (IntPtr.Size == 8)

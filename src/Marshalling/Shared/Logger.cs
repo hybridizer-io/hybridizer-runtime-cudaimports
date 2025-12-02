@@ -22,8 +22,9 @@ namespace Hybridizer.Runtime.CUDAImports
         static TextWriter w;
         private static bool debug = Debugger.IsAttached;
 
-        [DllImport("kernel32.dll")]
-        static extern void OutputDebugString(string lpOutputString);
+        // this does not exist on linux -- should never be used
+        // [DllImport("kernel32.dll")]
+        // static extern void OutputDebugString(string lpOutputString);
 
         static Logger()
         {
@@ -47,15 +48,7 @@ namespace Hybridizer.Runtime.CUDAImports
 
         public static void WriteLine(string message, params object[] variableArguments)
         {
-            if (debug)
-            {
-                OutputDebugString(string.Format(message, variableArguments));
-                OutputDebugString("\n");
-            } 
-            else 
-            {
-                Console.Out.WriteLine(message, variableArguments);
-            }
+            Console.Out.WriteLine(string.Format(message, variableArguments));
         }
     }
 }
