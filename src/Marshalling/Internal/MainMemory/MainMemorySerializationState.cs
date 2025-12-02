@@ -216,9 +216,12 @@ namespace Hybridizer.Runtime.CUDAImports
                 this.state = state;
             }
 
-            protected override void DeserializeRawData(byte[] data, IntPtr da, int size)
+            protected override void DeserializeRawData(byte[] data, IntPtr da, long size)
             {
-                Marshal.Copy(da, data, 0, size);
+                if(size > int.MaxValue) {
+                    Console.WriteLine("WARNING : cannot yet deserialize more than 2GB of raw data");
+                }
+                Marshal.Copy(da, data, 0, (int)size);
             }
 
             protected override void DeserializeArray(object param, IntPtr da, Type type)

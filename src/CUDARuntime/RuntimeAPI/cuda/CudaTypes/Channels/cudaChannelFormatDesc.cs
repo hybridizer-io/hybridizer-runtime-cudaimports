@@ -6,7 +6,13 @@ namespace Hybridizer.Runtime.CUDAImports
     /// CUDA Channel format descriptor
     /// </summary>
     [IntrinsicType("cudaChannelFormatDesc")]
+#if PLATFORM_X86
+    [StructLayout(LayoutKind.Explicit, Size = 20)] 
+#elif PLATFORM_X64
     [StructLayout(LayoutKind.Explicit, Size = 20)]
+#else
+#error Unsupported Platform
+#endif
     public struct cudaChannelFormatDesc
     {
         /// <summary>

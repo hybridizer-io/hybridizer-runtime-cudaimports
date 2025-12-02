@@ -301,10 +301,10 @@ namespace Hybridizer.Runtime.CUDAImports
             lock (this)
             {
                 string fullName = NamingTools.QualifiedTypeName(type);
-                int shallowSize = 0;
+                long shallowSize = 0;
                 foreach (var library in _libraries)
                 {
-                    shallowSize = (int)library.GetShallowSize.DynamicInvoke(fullName);
+                    shallowSize = System.Convert.ToInt64(library.GetShallowSize.DynamicInvoke(fullName));
                     if (shallowSize != 0) break;
                 }
                 if (shallowSize == 0)

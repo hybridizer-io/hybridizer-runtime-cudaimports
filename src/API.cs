@@ -454,6 +454,11 @@ namespace Hybridizer.Runtime.CUDAImports
         {
             return Flavors.Count == 0 || Flavors.Contains(s, StringComparer.InvariantCultureIgnoreCase);
         }
+
+        public bool AreIgnored(IEnumerable<string> values)
+        {
+            return values.Where(IsIgnored).Any();
+        }
     }
 
     /// <summary>

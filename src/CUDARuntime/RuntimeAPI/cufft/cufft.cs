@@ -9,7 +9,7 @@ namespace Hybridizer.Runtime.CUDAImports
     /// cufft wrapper
     /// Complete documentation <see href="https://docs.nvidia.com/cuda/cufft/index.html">here</see>
     /// </summary>
-    internal partial class cufft
+    public class cufft
     {
         static ICUFFT instance = new CUFFT_64_75();
 
@@ -56,8 +56,17 @@ namespace Hybridizer.Runtime.CUDAImports
                     instance = new CUFFT_64_101();
                     break;
                 case "110":
-                    if (IntPtr.Size != 8) throw new ApplicationException("32bits version of CUFFT does not exist for CUDA 10.1");
+                case "114":
+                case "116":
+                case "117":
+                    if (IntPtr.Size != 8) throw new ApplicationException("32bits version of CUFFT does not exist for CUDA 11");
                     instance = new CUFFT_64_110();
+                    break;
+                case "120":
+                case "121":
+                case "122":
+                    if (IntPtr.Size != 8) throw new ApplicationException("32bits version of CUFFT does not exist for CUDA 11");
+                    instance = new CUFFT_64_120();
                     break;
                 default:
                     throw new ApplicationException(string.Format("Unknown version of Cuda {0}", cudaVersion));

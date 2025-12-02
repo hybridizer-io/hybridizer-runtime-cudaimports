@@ -1,0 +1,384 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{5A67D03A-32B1-453C-962A-74C578BC02F1}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Hybridizer.Runtime.CUDAImports</RootNamespace>
+    <AssemblyName>Hybridizer.Runtime.CUDAImports</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+    <MonoDefines Condition="'$(OS)' == 'Unix'">MONO</MonoDefines>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\AnyCPU\Debug\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>0</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\AnyCPU\Release\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>0</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);TRACE;DEBUG;PLATFORM_X86</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <DocumentationFile>bin\x86\Debug\Hybridizer.Runtime.CUDAImports.XML</DocumentationFile>
+    <WarningLevel>0</WarningLevel>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);TRACE;PLATFORM_X86</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);TRACE;PLATFORM_X64</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <WarningLevel>0</WarningLevel>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);TRACE;PLATFORM_X64</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <WarningLevel>0</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Sources|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Sources\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <WarningLevel>0</WarningLevel>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Sources|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Sources\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);TRACE;DEBUG;PLATFORM_X86</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\x86\Debug\Hybridizer.Runtime.CUDAImports.XML</DocumentationFile>
+    <WarningLevel>0</WarningLevel>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Sources|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Sources\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);TRACE;DEBUG;PLATFORM_X64</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <WarningLevel>0</WarningLevel>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_NoHybrid|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug_NoHybrid\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <WarningLevel>0</WarningLevel>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_NoHybrid|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug_NoHybrid\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);TRACE;DEBUG;PLATFORM_X86</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\x86\Debug\Hybridizer.Runtime.CUDAImports.XML</DocumentationFile>
+    <WarningLevel>0</WarningLevel>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_NoHybrid|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug_NoHybrid\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);TRACE;DEBUG;PLATFORM_X64</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <WarningLevel>0</WarningLevel>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_NoHybrid|AnyCPU'">
+    <OutputPath>bin\Release_NoHybrid\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_NoHybrid|x86'">
+    <OutputPath>bin\x86\Release_NoHybrid\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);TRACE;PLATFORM_X86;$(MonoDefines)</DefineConstants>
+    <PlatformTarget>x86</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_NoHybrid|x64'">
+    <OutputPath>bin\x64\Release_NoHybrid\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>x64</PlatformTarget>
+    <DefineConstants>$(HybCustomConstants);PLATFORM_X64;$(MonoDefines)</DefineConstants>
+    <Optimize>true</Optimize>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release_BasicVersion|AnyCPU' ">
+    <OutputPath>bin\Release_Basic\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);TRACE;$(MonoDefines)</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <WarningLevel>0</WarningLevel>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release_BasicVersion|x86' ">
+    <OutputPath>bin\x86\Release_Basic\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);TRACE;PLATFORM_X86;HYBRIDIZER_BASIC;$(MonoDefines)</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release_BasicVersion|x64' ">
+    <OutputPath>bin\x64\Release_BasicVersion\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);TRACE;PLATFORM_X64;HYBRIDIZER_BASIC;$(MonoDefines)</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <WarningLevel>0</WarningLevel>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>bin\x64\Release_BasicVersion\Hybridizer.Runtime.CUDAImports.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug_BasicVersion|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug_Basic\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);DEBUG;TRACE;$(MonoDefines)</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <WarningLevel>0</WarningLevel>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug_BasicVersion|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug_Basic\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);TRACE;DEBUG;PLATFORM_X86;$(MonoDefines)</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\x86\Debug\Hybridizer.Runtime.CUDAImports.XML</DocumentationFile>
+    <WarningLevel>0</WarningLevel>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug_BasicVersion|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug_BasicVersion\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);TRACE;PLATFORM_X64;HYBRIDIZER_BASIC;$(MonoDefines)</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <WarningLevel>0</WarningLevel>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>hybridize.runtime.cudaimports.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_BasicCPU|AnyCPU'">
+    <OutputPath>bin\Release_BasicCPU\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_BasicCPU|x86'">
+    <OutputPath>bin\x86\Release_BasicCPU\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_BasicCPU|x64'">
+    <OutputPath>bin\x64\Release_BasicCPU\</OutputPath>
+    <DefineConstants>$(HybCustomConstants);PLATFORM_X64;</DefineConstants>
+    <PlatformTarget>x64</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\Transcoder.Disassembly\Errors\ErrorCodes.cs">
+      <Link>ErrorCodes.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Transcoder.Disassembly\Errors\ErrorStrings.Designer.cs">
+      <Link>ErrorStrings.Designer.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Transcoder.Disassembly\Warnings\WarningCodes.cs">
+      <Link>WarningCodes.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Transcoder.Disassembly\Warnings\WarningStrings.Designer.cs">
+      <Link>WarningStrings.Designer.cs</Link>
+    </Compile>
+    <Compile Include="AlignedAllocation.cs" />
+    <Compile Include="AlignedStorage.cs" />
+    <Compile Include="AtomicExpr.cs" />
+    <Compile Include="CUDARuntime\cooperative_groups.cs" />
+    <Compile Include="CUDARuntime\cusparse.cs" />
+    <Compile Include="Marshalling\Internal\AbstractObjectVisiter.cs" />
+    <Compile Include="Marshalling\Internal\Cuda\Aggregated\AggregatedAllocator.cs" />
+    <Compile Include="Marshalling\Internal\Cuda\Aggregated\Deserializer\CUDAAggregatedDeserializer.cs" />
+    <Compile Include="Marshalling\Internal\Cuda\Aggregated\Deserializer\CUDAAggregatedObjectDeserializer.cs" />
+    <Compile Include="Marshalling\Internal\Cuda\Aggregated\Serializer\CUDAAggregatedObjectSerializer.cs" />
+    <Compile Include="Marshalling\Internal\Cuda\Aggregated\Serializer\CUDAAggregatedSerializer.cs" />
+    <Compile Include="Marshalling\Internal\Cuda\Aggregated\SizeCalculator\CUDAAggregatedObjectSizeCalculator.cs" />
+    <Compile Include="Marshalling\Internal\Cuda\Aggregated\SizeCalculator\CUDAAggregatedSizeCalculator.cs" />
+    <Compile Include="Marshalling\Internal\MainMemory\MainMemorySerializationState.cs" />
+    <Compile Include="Marshalling\Internal\Cuda\CudaAbstractSerializationState.cs" />
+    <Compile Include="Marshalling\Internal\Cuda\Aggregated\CudaAggregatedSerializationState.cs" />
+    <Compile Include="Marshalling\Internal\Cuda\CudaSerializationState.cs" />
+    <Compile Include="Marshalling\Internal\NativeDeserializer.cs" />
+    <Compile Include="Marshalling\Internal\NativeObjectDeserializer.cs" />
+    <Compile Include="Marshalling\Internal\NativeObjectSerializer.cs" />
+    <Compile Include="Marshalling\Internal\NativeSerializer.cs" />
+    <Compile Include="Marshalling\Public\CudaMarshaler.cs" />
+    <Compile Include="Marshalling\Public\MainMemoryMarshaler.cs" />
+    <Compile Include="Marshalling\Internal\NativeSerializerState.cs" />
+    <Compile Include="Marshalling\Public\ThreadedCudaMarshaler.cs" />
+    <Compile Include="Marshalling\Shared\AbstractNativeMarshaler.cs" />
+    <Compile Include="Marshalling\Shared\CudaMarshalerTimer.cs" />
+    <Compile Include="Marshalling\Shared\DebugWriter.cs" />
+    <Compile Include="Marshalling\Shared\FieldVisitor.cs" />
+    <Compile Include="Marshalling\Shared\HandleDelegate.cs" />
+    <Compile Include="Marshalling\Shared\Logger.cs" />
+    <Compile Include="Marshalling\Shared\NativeDlls.cs" />
+    <Compile Include="Marshalling\Shared\NativePtrConverter.cs" />
+    <Compile Include="Marshalling\Shared\ThreadLocal.cs" />
+    <Compile Include="Marshalling\Shared\TypeInfo.cs" />
+    <Compile Include="JavaRandom.cs" />
+    <Compile Include="CUDARuntime\Math.cs" />
+    <Compile Include="CUDARuntime\nvblas.cs" />
+    <Compile Include="Parallel2D.cs" />
+    <Compile Include="TdrDetection.cs" />
+    <Compile Include="VectorUnit.cs" />
+    <Compile Include="ZeroCopyResidentArray.cs" />
+    <Compile Include="CUDARuntime\cublas.cs" />
+    <Compile Include="CUDARuntime\cuda.cs" />
+    <Compile Include="CUDARuntime\CudaFP16.cs" />
+    <Compile Include="CUDARuntime\cuda_types.cs" />
+    <Compile Include="CUDARuntime\cufft.cs" />
+    <Compile Include="CUDARuntime\curand.cs" />
+    <Compile Include="CUDARuntime\curand_device.cs" />
+    <Compile Include="API.cs" />
+    <Compile Include="FieldTools.cs" />
+    <Compile Include="KernelInteropTools.cs" />
+    <Compile Include="HybridizerExtension.cs" />
+    <Compile Include="HybridizerProperties.cs" />
+    <Compile Include="HybRunner.cs" />
+    <Compile Include="JavaRuntime.cs" />
+    <Compile Include="NamingTools.cs" />
+    <Compile Include="NativeArrayIndexer.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResidentArray.cs" />
+    <Compile Include="SharedMemory.cs" />
+    <Compile Include="StackArray.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="hybridize.runtime.cudaimports.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\..\Transcoder.Disassembly\Errors\ErrorStrings.resx">
+      <Link>ErrorStrings.resx</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\..\Transcoder.Disassembly\Warnings\WarningStrings.resx">
+      <Link>WarningStrings.resx</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

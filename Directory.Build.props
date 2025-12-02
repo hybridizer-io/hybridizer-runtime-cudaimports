@@ -1,11 +1,11 @@
 <Project>
    <PropertyGroup>
-    <Authors>Altimesh engineers</Authors>
-    <Company>Altimesh</Company>
+    <Authors>Hybridizer Engineers</Authors>
+    <Company>Hybridizer</Company>
     <NeutralLanguage>en</NeutralLanguage>
-    <Description>CUDA Runtime and Driver API wrapping in dotnet - runtime core for Altimesh Hybridizer (c)</Description>
-    <Copyright>Copyright @ ALTIMESH 2023</Copyright>
-    <RepositoryUrl>https://github.com/altimesh/hybridizer-runtime-cudaimports</RepositoryUrl>
+    <Description>CUDA Runtime and Driver API wrapping in dotnet - runtime core for Hybridizer (c)</Description>
+    <Copyright>Copyright @ ALTIMESH 2025</Copyright>
+    <RepositoryUrl>https://github.com/hybridizer-io/hybridizer-runtime-cudaimports</RepositoryUrl>
     <PackageTags>C#;CUDA</PackageTags>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <PackRelease>true</PackRelease>

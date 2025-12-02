@@ -45,7 +45,7 @@ namespace Hybridizer.Runtime.CUDAImports
         /// <summary>
         /// constructor from components
         /// </summary>
-        private float4(float xx, float yy, float zz, float ww)
+        public float4(float xx, float yy, float zz, float ww)
         {
             x = xx;
             y = yy;

@@ -25,6 +25,7 @@ namespace Hybridizer.Runtime.CUDAImports
             {
                 HandleField(typeInfo, key, param, overrides);
             }
+
             HandleEndOfObject(param);
         }
 
@@ -53,15 +54,15 @@ namespace Hybridizer.Runtime.CUDAImports
                     HandlePaddingByte(key.Count);
                     break;
                 default:
-                    if(key.UnionSubFields != null && key.UnionSubFields.Count > 0)
+                    if (key.UnionSubFields != null && key.UnionSubFields.Count > 0)
                     {
-                        int max = int.MinValue;
+                        long max = long.MinValue;
                         int maxindex = 0;
                         int fdindex = 0;
-                        foreach(var subfd in key.UnionSubFields)
+                        foreach (var subfd in key.UnionSubFields)
                         {
-                            int subfdsize = FieldTools.SizeOf(subfd.FieldType);
-                            if(subfdsize > max)
+                            long subfdsize = FieldTools.SizeOf(subfd.FieldType);
+                            if (subfdsize > max)
                             {
                                 max = subfdsize;
                                 maxindex = fdindex;
@@ -122,7 +123,7 @@ namespace Hybridizer.Runtime.CUDAImports
         public HashSet<PendingDelegateTarget> pendingDelegateTargets = new HashSet<PendingDelegateTarget>();
 
         protected abstract void HandleVTable(long o);
-        protected abstract void HandlePaddingByte(int count);
+        protected abstract void HandlePaddingByte(long count);
         protected abstract void HandleOverride(byte[] data);
         protected abstract void HandlePrimitive(FieldTools.FieldDeclaration key, object o);
         protected abstract void HandleObject(FieldTools.FieldDeclaration key, object param, IntPtr p);

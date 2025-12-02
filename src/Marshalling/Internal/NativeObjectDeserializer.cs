@@ -44,7 +44,7 @@ namespace Hybridizer.Runtime.CUDAImports
             {
             }
 
-            protected override void HandlePaddingByte(int count)
+            protected override void HandlePaddingByte(long count)
             {
                 br.BaseStream.Position += count;
             }
@@ -54,13 +54,35 @@ namespace Hybridizer.Runtime.CUDAImports
                 br.ReadBytes(data.Length);
             }
 
+            private static byte[] ReadBytes(BinaryReader reader, long totalBytesToRead)
+            {
+                List<byte> byteList = new List<byte>();
+                const int bufferSize = int.MaxValue;
+                long bytesRead = 0;
+
+                while (bytesRead < totalBytesToRead)
+                {
+                    int bytesToReadNow = (int)Math.Min(bufferSize, totalBytesToRead - bytesRead);
+                    byte[] buffer = reader.ReadBytes(bytesToReadNow);
+                    
+                    if (buffer.Length == 0)
+                        break;
+
+                    byteList.AddRange(buffer);
+                    bytesRead += buffer.Length;
+                }
+
+                return byteList.ToArray();
+            }
+
+
             protected override void HandlePrimitive(FieldTools.FieldDeclaration fd, object param)
             {
                 var declaringType = fd.Info.DeclaringType;
                 var isNullableField = declaringType.IsGenericType && declaringType.GetGenericTypeDefinition() == typeof(Nullable<>);
                 if (isNullableField)
                 {
-                    br.ReadBytes(FieldTools.SizeOf(fd.Info.FieldType));
+                    ReadBytes(br, FieldTools.SizeOf(fd.Info.FieldType));
                     return;                        
                 }
 
@@ -69,7 +91,7 @@ namespace Hybridizer.Runtime.CUDAImports
                     // This happens with fixed buffers
                     var value = fd.Info.GetValue(param);
                     GCHandle h = GCHandle.Alloc(value, GCHandleType.Pinned);
-                    byte[] b = br.ReadBytes(fd.ByteCount);
+                    byte[] b = ReadBytes(br, fd.ByteCount);
                     Marshal.Copy(b, 0, h.AddrOfPinnedObject(), b.Length);
                     h.Free();
                     fd.Info.SetValue(param, value);

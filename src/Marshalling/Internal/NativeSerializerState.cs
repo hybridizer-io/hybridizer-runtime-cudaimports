@@ -143,7 +143,7 @@ namespace Hybridizer.Runtime.CUDAImports
 
         private static bool IsTypeSupported(Type t)
         {
-            return !t.IsPrimitive && (t.IsArray || t.IsClass || t.IsInterface || typeof(ICustomMarshalled).IsAssignableFrom(t));
+            return !t.IsPrimitive && (t.IsValueType || t.IsArray || t.IsClass || t.IsInterface || typeof(ICustomMarshalled).IsAssignableFrom(t));
         }
 
         internal void Dispose()

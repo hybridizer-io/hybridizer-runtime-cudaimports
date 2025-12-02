@@ -17,7 +17,7 @@ namespace Hybridizer.Runtime.CUDAImports
         private static IDictionary<Type, FieldTypeEnum> _typeToEnum = new Dictionary<Type, FieldTypeEnum>();
 
         private static SafeDictionary<Type, FieldDeclaration[]> _orderedFieldsCache = new SafeDictionary<Type, FieldDeclaration[]>();
-        private static SafeDictionary<Type, int> _sizeCache = new SafeDictionary<Type, int>();
+        private static SafeDictionary<Type, long> _sizeCache = new SafeDictionary<Type, long>();
 
 
         private static Type[] funcTypes = new Type[]
@@ -92,7 +92,7 @@ namespace Hybridizer.Runtime.CUDAImports
             // might be null for VTABLE or PADDING
             public FieldInfo Info { get; set; }
 
-            public int Count { get; set; }
+            public long Count { get; set; }
             public FieldDeclarationType Type { get; set; }
 
             public List<FieldDeclaration> UnionSubFields { get; set; }
@@ -111,7 +111,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 return result;
             }
 
-            public FieldDeclaration(string name, Type fieldType, FieldInfo info, FieldDeclarationType type = FieldDeclarationType.DATA, int count = 1)
+            public FieldDeclaration(string name, Type fieldType, FieldInfo info, FieldDeclarationType type = FieldDeclarationType.DATA, long count = 1)
                 : this()
             {
                 if (info != null)
@@ -154,7 +154,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 return String.Format("{0} : {1}[{2}] - TypeEnam={3}, Type={4}, ByteCount={5}", Name, FieldType, Count, TypeEnum, Type, ByteCount);
             }
 
-            public int ByteCount 
+            public long ByteCount 
             {
                 get
                 {
@@ -194,11 +194,11 @@ namespace Hybridizer.Runtime.CUDAImports
             }
         }
 
-        public static int SizeOf(Type t, int offset = 0, int count = 1)
+        public static long SizeOf(Type t, long offset = 0, long count = 1)
         {
             if (offset == 0 && count == 1)
             {
-                int cacheResult;
+                long cacheResult;
                 if (_sizeCache.TryGetValue(t, out cacheResult))
                 {
                     return cacheResult;
@@ -211,7 +211,7 @@ namespace Hybridizer.Runtime.CUDAImports
             return SizeOf_(t, offset, count);
         }
 
-        private static int SizeOf_(Type t, int offset, int count)
+        private static long SizeOf_(Type t, long offset, long count)
         {
             if (t.GUID == Guid.Parse("506315CE-E8F4-46A3-AE9F-A1A950A8FD4C")) // half
                 return 2;
@@ -223,7 +223,7 @@ namespace Hybridizer.Runtime.CUDAImports
             {
                 if (t == typeof(IntPtr)) return 8 * count;
                 if (t == typeof(UIntPtr)) return 8 * count;
-                int s = Marshal.SizeOf(t) * count;
+                long s = Marshal.SizeOf(t) * count;
                 //if ((s == 8) && (offset % 8) != 0)
                 //{
                 //    // Pad to 8 bytes
@@ -234,7 +234,7 @@ namespace Hybridizer.Runtime.CUDAImports
             }
             else if (t.IsEnum)
             {
-                int s = Marshal.SizeOf(Enum.GetUnderlyingType(t)) * count;
+                long s = Marshal.SizeOf(Enum.GetUnderlyingType(t)) * count;
                 if ((s == 8) && (offset % 8) != 0)
                 {
                     // Pad to 8 bytes
@@ -260,7 +260,7 @@ namespace Hybridizer.Runtime.CUDAImports
                     {
                         if (attribute.GetType().GUID == Guid.Parse("19B45042-6B32-420C-AEB2-2ACE70D23531")) // ICustomMarshalledSize
                         {
-                            int size = (int) attribute.GetType().GetProperty("Size").GetGetMethod().Invoke(attribute, new object[0]);
+                            long size = Convert.ToInt64(attribute.GetType().GetProperty("Size").GetGetMethod().Invoke(attribute, new object[0]));
                             return size * count;
                         }
                     }
@@ -270,7 +270,7 @@ namespace Hybridizer.Runtime.CUDAImports
             }
 
             IList<FieldDeclaration[]> fields = GetFields(t);
-            int result = 0;
+            long result = 0;
             foreach (FieldDeclaration[] fdl in fields)
             {
                 // pad to eight bytes -> there seems to be an issue here
@@ -286,7 +286,7 @@ namespace Hybridizer.Runtime.CUDAImports
             return result;
         }
 
-        private static int SizeofField(Type t, int offset, int result, FieldDeclaration fd)
+        private static long SizeofField(Type t, long offset, long result, FieldDeclaration fd)
         {
             switch (fd.Type)
             {
@@ -299,12 +299,12 @@ namespace Hybridizer.Runtime.CUDAImports
                 default:
                     if(fd.UnionSubFields != null && fd.UnionSubFields.Count > 0)
                     {
-                        int max = int.MinValue;
+                        long max = long.MinValue;
                         int maxindex = 0;
                         int fdindex = 0;
                         foreach (var subfd in fd.UnionSubFields)
                         {
-                            int subfdsize = FieldTools.SizeOf(subfd.FieldType);
+                            long subfdsize = FieldTools.SizeOf(subfd.FieldType);
                             if (subfdsize > max)
                             {
                                 max = subfdsize;
@@ -316,7 +316,7 @@ namespace Hybridizer.Runtime.CUDAImports
                     }
                     else if (fd.FieldType.IsArray && CudaRuntimeProperties.UseHybridArrays)
                     {
-                        int arrayRank = fd.FieldType.GetArrayRank();
+                        long arrayRank = fd.FieldType.GetArrayRank();
                         result += 8 + arrayRank * 8;
                         // result += 16;
                     }
@@ -408,7 +408,7 @@ namespace Hybridizer.Runtime.CUDAImports
                     {
                         result.Add(new FieldDeclaration("$__VTABLE", null, null, FieldDeclaration.FieldDeclarationType.VTABLE));
                     }
-                    int size = 0;
+                    long size = 0;
                     foreach (List<FieldInfo> allFields in fields.Values)
                     {
                         if(allFields.Count == 0)
@@ -432,7 +432,7 @@ namespace Hybridizer.Runtime.CUDAImports
                         }
                         else
                         {
-                            var maxSize = int.MinValue;
+                            var maxSize = long.MinValue;
                             foreach (var fi in allFields)
                             {
                                 var fieldSize = SizeOf(fi.FieldType);
@@ -522,10 +522,10 @@ namespace Hybridizer.Runtime.CUDAImports
                         if (IsSpecialClassConsideredAsStruct(fi.FieldType) || fi.FieldType.IsValueType)
                         {
                             structures.Add(fi.Name, new FieldDeclaration(fi.Name, fi.FieldType, fi));
-                            int size = SizeOf(fi.FieldType);
+                            long size = SizeOf(fi.FieldType);
                             if ( (size % 8) != 0)
                             {
-                                int pCount = 8 - (size % 8);
+                                long pCount = 8 - (size % 8);
                                 structures.Add(fi.Name + "##padding", new FieldDeclaration(String.Format("__hybridizer_padding_{0}", paddingIndex), null, null, FieldDeclaration.FieldDeclarationType.PADDING, pCount));
                                 ++paddingIndex;
                             }
@@ -585,10 +585,15 @@ namespace Hybridizer.Runtime.CUDAImports
                         {
                             if (fi.FieldType.IsEnum)
                             {
-                                if (Enum.GetUnderlyingType(fi.FieldType) == typeof(int) || Enum.GetUnderlyingType(fi.FieldType) == typeof(uint))
-                                    primitives4bytes.Add(fi.Name, new FieldDeclaration(fi.Name, fi.FieldType, fi));
-                                else if (Enum.GetUnderlyingType(fi.FieldType) == typeof(long) || Enum.GetUnderlyingType(fi.FieldType) == typeof(ulong))
+                                var ut = Enum.GetUnderlyingType(fi.FieldType);
+                                if (Marshal.SizeOf(ut) == 8)
                                     primitives8bytes.Add(fi.Name, new FieldDeclaration(fi.Name, fi.FieldType, fi));
+                                else if (Marshal.SizeOf(ut) == 4)
+                                    primitives4bytes.Add(fi.Name, new FieldDeclaration(fi.Name, fi.FieldType, fi));
+                                else if (Marshal.SizeOf(ut) == 2)
+                                    primitives2bytes.Add(fi.Name, new FieldDeclaration(fi.Name, fi.FieldType, fi));
+                                else if (Marshal.SizeOf(ut) == 1)
+                                    primitives1byte.Add(fi.Name, new FieldDeclaration(fi.Name, fi.FieldType, fi));
                                 else throw new ApplicationException("INTERNAL ERROR");
                                 continue;
                             }

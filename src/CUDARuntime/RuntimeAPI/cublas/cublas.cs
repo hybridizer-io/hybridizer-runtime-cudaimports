@@ -99,8 +99,19 @@ namespace Hybridizer.Runtime.CUDAImports
                         throw new NotSupportedException("cublas 10.1 dropped 32 bits support");
                     break;
                 case "110":
+                case "114":
+                case "116":
+                case "117":
                     if (IntPtr.Size == 8)
                         instance = new CUBLAS_64_110();
+                    else
+                        throw new NotSupportedException("cublas 11 dropped 32 bits support");
+                    break;
+                case "120":
+                case "121":
+                case "122":
+                    if (IntPtr.Size == 8)
+                        instance = new CUBLAS_64_120();
                     else
                         throw new NotSupportedException("cublas 11 dropped 32 bits support");
                     break;

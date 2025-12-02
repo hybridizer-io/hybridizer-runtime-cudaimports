@@ -14,7 +14,7 @@ namespace Hybridizer.Runtime.CUDAImports
         IntPtr GetProcAddress(IntPtr hModule, [MarshalAs(UnmanagedType.LPStr)] string procName);
     }
 
-    public class Win32KernelInteropTools : IKernelInteropTools
+    internal class Win32KernelInteropTools : IKernelInteropTools
     {
         [DllImport("kernel32.dll", EntryPoint="LoadLibrary", SetLastError = true)]
         public static extern IntPtr InnerLoadLibrary(string libName);
@@ -38,7 +38,7 @@ namespace Hybridizer.Runtime.CUDAImports
         }
     }
 
-    public class LinuxKernelInteropTools : IKernelInteropTools
+    internal class LinuxKernelInteropTools : IKernelInteropTools
     {
         public IntPtr LoadLibrary(string fileName)
         {
@@ -109,18 +109,20 @@ namespace Hybridizer.Runtime.CUDAImports
         /// return true if environment is linux. 
         /// </summary>
         /// <see href="http://www.mono-project.com/docs/faq/technical/#how-to-detect-the-execution-platform"></see>
-        public static Lazy<bool> IsLinux = new Lazy<bool>(() =>
-        {
-            int p = (int)Environment.OSVersion.Platform;
-            return (p == 4) || (p == 6) || (p == 128);
-        });
+        public static bool IsLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
         static KernelInteropTools()
         {
-            if(IsLinux.Value)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
                 instance = new LinuxKernelInteropTools();
-            else
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
                 instance = new Win32KernelInteropTools();
+            }
+            else
+                throw new NotImplementedException("not supported OS");
         }
 
         public static IntPtr LoadLibrary(string libName)
