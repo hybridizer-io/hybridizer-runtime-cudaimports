@@ -45,7 +45,7 @@ jobs:
     - name: pack
       env: 
         VERSION: ${{ steps.version.outputs.version }}
-      run: dotnet pack -p:Configuration=Release -p:Platform=x64 --output ${{ github.workspace}} ${{ github.workspace}}/src/Hybridizer.Runtime.CUDAImports.csproj
+      run: dotnet pack -p:NuGetVersion="$VERSION" -p:Configuration=Release -p:Platform=x64 --output ${{ github.workspace}} ${{ github.workspace}}/src/Hybridizer.Runtime.CUDAImports.csproj
     - name: publish to nuget.org
       env:
         VERSION: ${{ steps.version.outputs.version }}
