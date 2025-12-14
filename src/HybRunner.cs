@@ -505,6 +505,27 @@ namespace Hybridizer.Runtime.CUDAImports
 		}
 
         /// <summary>
+        /// expects generated cudadll to be the only _CUDA.dll in the executing directory, which should be by default
+        /// </summary>
+        /// <returns></returns>
+        public static HybRunner AutoCuda()
+        {
+            try {
+                var dir = new FileInfo(Assembly.GetExecutingAssembly().Location).Directory;
+                
+                foreach(var file in dir.GetFiles("*_CUDA.dll", SearchOption.TopDirectoryOnly))
+                {
+                    Console.WriteLine($"Found {file} as candidate for generated dll -- try to load");
+                    return Cuda(file.FullName);
+                }
+            } 
+            catch {}
+            finally {
+                throw new ApplicationException("cannot find any candidate generated CUDA dll -- specify path explicitely");
+            }
+        }
+
+        /// <summary>
         /// Automatically detects processor features (flags) to load the appropriate satellite dll
         /// satellite dlls must have a name ending with the flavor (AVX/AVX2/AVX512)
         /// LINUX ONLY
