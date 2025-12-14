@@ -68,7 +68,8 @@ namespace Hybridizer.Runtime.CUDAImports
             { "120", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_120_linux.CUDARTDLL : Cuda_64_120_windows.CUDARTDLL } },
             { "124", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_124_linux.CUDARTDLL : Cuda_64_124_windows.CUDARTDLL } },
             { "126", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_126_linux.CUDARTDLL : Cuda_64_126_windows.CUDARTDLL } },
-            { "130", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_130_linux.CUDARTDLL : Cuda_64_130_windows.CUDARTDLL } }
+            { "130", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_130_linux.CUDARTDLL : Cuda_64_130_windows.CUDARTDLL } },
+            { "131", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_131_linux.CUDARTDLL : Cuda_64_131_windows.CUDARTDLL } }
         };
 
         /// <summary>
@@ -94,7 +95,9 @@ namespace Hybridizer.Runtime.CUDAImports
                             return k;
             
             string cudaVersion = String.Empty;
-#if HYBRIDIZER_CUDA_VERSION_130
+#if HYBRIDIZER_CUDA_VERSION_131
+            cudaVersion = "131";
+#elif HYBRIDIZER_CUDA_VERSION_130
             cudaVersion = "130";
 #elif HYBRIDIZER_CUDA_VERSION_126
             cudaVersion = "126";
@@ -130,7 +133,7 @@ namespace Hybridizer.Runtime.CUDAImports
 
             // Otherwise default to latest version
             if (String.IsNullOrWhiteSpace(cudaVersion)) 
-                cudaVersion = "130";
+                cudaVersion = "131";
             cudaVersion = cudaVersion.Replace(".", ""); // Remove all dots ("7.5" will be understood "75")
             
             if (s_VERBOSITY != VERBOSITY.None)
@@ -166,6 +169,9 @@ namespace Hybridizer.Runtime.CUDAImports
                     break;
                 case "130":
                     instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? new Cuda_64_130_linux() : new Cuda_64_130_windows();
+                    break;
+                case "131":
+                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? new Cuda_64_131_linux() : new Cuda_64_131_windows();
                     break;
                 default:
                     throw new ApplicationException(string.Format("Unsupported version of Cuda {0}", cudaVersion));
