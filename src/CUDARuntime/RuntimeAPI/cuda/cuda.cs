@@ -7,6 +7,8 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using static Hybridizer.Runtime.CUDAImports.CudaImplem;
+using System.IO;
+using System.Text.Json;
 
 namespace Hybridizer.Runtime.CUDAImports
 {
@@ -77,22 +79,45 @@ namespace Hybridizer.Runtime.CUDAImports
         /// </summary>
         public static ICuda instance { get; set; }
 
+        private static string _cudaversion = string.Empty;
+
+        public static void SetCudaVersion(string value)
+        {
+            switch(value)
+            {
+                case "13.1":
+                case "13.0":
+                case "12.6":
+                case "12.4":
+                case "11.4":
+                case "11.0":
+                    _cudaversion = value;
+                    break;
+                default:
+                    throw new ApplicationException($"Unsupported cuda version {value}");
+            }
+        }
+
+        private sealed class CudaSettings
+        {
+            public string? CudaVersion { get; set; }
+        }
+
+
         /// <summary>
         /// returns the cuda runtime version
-        /// if cudaimports is built with /p:DefineConstants="HYBRIDIZER_CUDA_VERSION_xx", we take that value first
-        /// then we try to find it in application settings with key "hybridizer.cudaruntimeversion"
-        /// finally from environment "HYBRIDIZER_CUDA_VERSION"
-        /// if all fails, we default on "80"
+        /// if it has been set using SetCudaVersion, we take that value first
+        /// if cudaimports is built with /p:DefineConstants="HYBRIDIZER_CUDA_VERSION_xx", we take that
+        /// then we look in environment "HYBRIDIZER_CUDA_VERSION"
+        /// if it all fails, we default on 131
         /// </summary>
         /// <returns></returns>
         public static string GetCudaVersion()
         {
-            // Is any known cuda DLL already loaded
-            foreach (var k in CUDA_DLLS.Keys)
-                foreach (var dllName in CUDA_DLLS[k])
-                    foreach (ProcessModule module in Process.GetCurrentProcess().Modules)
-                        if (module.ModuleName == dllName) 
-                            return k;
+            if(!string.IsNullOrEmpty(_cudaversion))
+            {
+                return _cudaversion.Replace(".", "");
+            }
             
             string cudaVersion = String.Empty;
 #if HYBRIDIZER_CUDA_VERSION_131
@@ -108,17 +133,33 @@ namespace Hybridizer.Runtime.CUDAImports
 #elif HYBRIDIZER_CUDA_VERSION_110
             cudaVersion = "110";
 #endif
-            try
+            if(!string.IsNullOrWhiteSpace(cudaVersion))
             {
-                // if (String.IsNullOrWhiteSpace(cudaVersion))
-                // {
-                //     cudaVersion = ConfigurationManager.AppSettings["hybridizer.cudaruntimeversion"];
-                // }
+                return cudaVersion.Trim().Replace(".", "");
             }
-            catch (Exception e)
+
+            var baseDir = AppContext.BaseDirectory;
+            var path = Path.Combine(baseDir, "cuda.settings.json");
+
+            if (File.Exists(path))
             {
-                Console.Error.WriteLine("Cannot read cuda version from application config file - Exception: {0}", e);
+                try
+                {
+                    using var stream = File.OpenRead(path);
+                    var settings = JsonSerializer.Deserialize<CudaSettings>(stream);
+
+                    if (!string.IsNullOrWhiteSpace(settings?.CudaVersion))
+                    {
+                        return settings.CudaVersion.Trim().Replace(".", "");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException(
+                        $"Failed to read CUDA settings from '{path}'.", ex);
+                }
             }
+
             if (String.IsNullOrWhiteSpace(cudaVersion))
             {
                 try
@@ -132,14 +173,11 @@ namespace Hybridizer.Runtime.CUDAImports
             }
 
             // Otherwise default to latest version
-            if (String.IsNullOrWhiteSpace(cudaVersion)) 
+            if (String.IsNullOrWhiteSpace(cudaVersion)) {
                 cudaVersion = "131";
-            cudaVersion = cudaVersion.Replace(".", ""); // Remove all dots ("7.5" will be understood "75")
-            
-            if (s_VERBOSITY != VERBOSITY.None)
-            {
-                Console.WriteLine("Using CUDA {0}", cudaVersion);
             }
+            
+            cudaVersion = cudaVersion.Replace(".", ""); // Remove all dots ("7.5" will be understood "75")
             return cudaVersion;
         }
 
