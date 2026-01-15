@@ -165,10 +165,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 HybridizerCopyToSymbolDelegate copyToSymbloDel = (HybridizerCopyToSymbolDelegate)Marshal.GetDelegateForFunctionPointer(hybridizerCopyToSymbolAddress, typeof(HybridizerCopyToSymbolDelegate));
                 res.HybridizerCopyToSymbol = copyToSymbloDel;
             }
-
-            if (cuda.s_VERBOSITY == cuda.VERBOSITY.Verbose)
-                Console.Out.WriteLine("[INFO] : Registered DLL {0}", fileInfo.FullName);
-
+            
             return res;
         }
 
