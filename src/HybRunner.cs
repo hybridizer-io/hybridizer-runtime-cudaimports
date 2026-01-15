@@ -1365,9 +1365,6 @@ namespace Hybridizer.Runtime.CUDAImports
             MethodAttributes methodAttributes = MethodAttributes.Public | MethodAttributes.PinvokeImpl | MethodAttributes.Static;
             string symbolName = methodName;
 
-            if (cuda.s_VERBOSITY == cuda.VERBOSITY.Verbose)
-                Console.WriteLine("Mapped " + symbolName);
-
             CallingConventions callingConvention = CallingConventions.Standard;
             MethodBuilder result = tb.DefineMethod(symbolName, methodAttributes, callingConvention, typeof(int), parameters);
             var attrType = typeof(DllImportAttribute);
