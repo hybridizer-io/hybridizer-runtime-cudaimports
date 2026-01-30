@@ -1281,6 +1281,17 @@ namespace Hybridizer.Runtime.CUDAImports
 #pragma warning restore 1591
     }
 
+    /// <summary>
+    /// When a loop for is inside a function tagged with this attribute
+    /// and the omp feature is available, the function will be marked as inlined __attribute__((always_inline))
+    /// and it's topmost for loop (if any), will be marked #pragma omp for
+    /// </summary>
+    [Guid("ED481CB5-BB4D-4A11-A45F-1EEED9129E54")   ]
+    public class OmpForAttribute : Attribute
+    {
+        public OmpForAttribute() { }
+    }
+
 
 
     /// <summary>
