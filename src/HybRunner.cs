@@ -84,6 +84,7 @@ namespace Hybridizer.Runtime.CUDAImports
         private int _blockDimZ = 1;
         private int _gridDimX = 1;
         private int _gridDimY = 1;
+        private int _gridDimZ = 1;
         private int _shared;
         private IntPtr _dllPtr = IntPtr.Zero;
         private Stopwatch _stopWatchLastKernel = new Stopwatch();
@@ -228,6 +229,14 @@ namespace Hybridizer.Runtime.CUDAImports
         public int GridDimY
         {
             get { return _gridDimY; }
+        }
+
+        /// <summary>
+        /// grid dimension Z
+        /// </summary>
+        public int GridDimZ
+        {
+            get { return _gridDimZ; }
         }
 
         /// <summary>
@@ -626,6 +635,32 @@ namespace Hybridizer.Runtime.CUDAImports
         }
 
         /// <summary>
+        /// Configures a launch (CUDA-only)
+        /// </summary>
+        /// <param name="gridDimX"></param>
+        /// <param name="gridDimY"></param>
+        /// <param name="gridDimZ"></param>
+        /// <param name="blockDimX"></param>
+        /// <param name="blockDimY"></param>
+        /// <param name="blockDimZ"></param>
+        /// <param name="shared"></param>
+        /// <returns></returns>
+        public HybRunner SetDistrib(int gridDimX, int gridDimY,  int gridDimZ, int blockDimX, int blockDimY, int blockDimZ, int shared)
+        {   
+            if (_flavor == HybridizerFlavor.AVX && (gridDimZ != 1 || gridDimY != 1 || blockDimX != 32 || blockDimY != 1 || blockDimZ != 1))
+                throw new ApplicationException("Invalid work distributions parameters");
+
+            _gridDimX = gridDimX;
+            _gridDimY = gridDimY;
+            _gridDimZ = gridDimZ;
+            _blockDimX = blockDimX;
+            _blockDimY = blockDimY;
+            _blockDimZ = blockDimZ;
+            _shared = shared;
+            return this;
+        }
+
+        /// <summary>
         /// Sets the shared memory size parameter for a launch (CUDA-only)
         /// </summary>
         /// <param name="shared"></param>
@@ -740,7 +775,8 @@ namespace Hybridizer.Runtime.CUDAImports
                     ilgen.Emit(OpCodes.Call, mi); // call corresponding setdistrib method
                                                   // SetDistrib returns HybRunner => trash it
                     ilgen.Emit(OpCodes.Pop);
-                    ilgen.Emit(OpCodes.Ldarg_0); ilgen.Emit(OpCodes.Ret); // return this
+                    ilgen.Emit(OpCodes.Ldarg_0); 
+                    ilgen.Emit(OpCodes.Ret); // return this
                 }
                 {
                     MethodBuilder mb = typeBuilder.DefineMethod("SetDistrib", MethodAttributes.Public, typeBuilder, new Type[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(int), typeof(int) });
@@ -757,7 +793,27 @@ namespace Hybridizer.Runtime.CUDAImports
                     ilgen.Emit(OpCodes.Call, mi); // call corresponding setdistrib method
                                                   // SetDistrib returns HybRunner => trash it
                     ilgen.Emit(OpCodes.Pop);
-                    ilgen.Emit(OpCodes.Ldarg_0); ilgen.Emit(OpCodes.Ret); // return this
+                    ilgen.Emit(OpCodes.Ldarg_0); 
+                    ilgen.Emit(OpCodes.Ret); // return this
+                }
+                {
+                    MethodBuilder mb = typeBuilder.DefineMethod("SetDistrib", MethodAttributes.Public, typeBuilder, new Type[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(int), typeof(int), typeof(int) });
+                    ILGenerator ilgen = mb.GetILGenerator();
+                    ilgen.Emit(OpCodes.Ldarg_0);
+                    ilgen.Emit(OpCodes.Ldfld, runtimeField); // load the hybrunner instance attached to the wrapper
+                    ilgen.Emit(OpCodes.Ldarg_1);
+                    ilgen.Emit(OpCodes.Ldarg_2);
+                    ilgen.Emit(OpCodes.Ldarg_3);
+                    ilgen.Emit(OpCodes.Ldarg, 4);
+                    ilgen.Emit(OpCodes.Ldarg, 5);
+                    ilgen.Emit(OpCodes.Ldarg, 6);
+                    ilgen.Emit(OpCodes.Ldarg, 7);
+                    MethodInfo mi = typeof(HybRunner).GetMethod("SetDistrib", new Type[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(int), typeof(int), typeof(int) });
+                    ilgen.Emit(OpCodes.Call, mi); // call corresponding setdistrib method
+                                                  // SetDistrib returns HybRunner => trash it
+                    ilgen.Emit(OpCodes.Pop);
+                    ilgen.Emit(OpCodes.Ldarg_0); 
+                    ilgen.Emit(OpCodes.Ret); // return this
                 }
                 {
                     MethodBuilder mb = typeBuilder.DefineMethod("SetDistrib", MethodAttributes.Public, typeBuilder, new Type[] { typeof(dim3), typeof(dim3) });
@@ -836,6 +892,7 @@ namespace Hybridizer.Runtime.CUDAImports
                     {
                         nativeParameters.Add(typeof(int)); // griddim_x
                         nativeParameters.Add(typeof(int)); // griddim_y
+                        nativeParameters.Add(typeof(int)); // griddim_z
                         nativeParameters.Add(typeof(int)); // blockDim_x
                         nativeParameters.Add(typeof(int)); // blockdim_y
                         nativeParameters.Add(typeof(int)); // blockdim_z
@@ -879,7 +936,7 @@ namespace Hybridizer.Runtime.CUDAImports
                     {
                         List<Type> streamParameters = new List<Type>(nativeParameters.Count + 1);
                         streamParameters.AddRange(nativeParameters);
-                        streamParameters.Insert(6, typeof(cudaStream_t));
+                        streamParameters.Insert(7, typeof(cudaStream_t));
                         nativeMethodStream = GetNativeMethod(typeBuilder, symbol + "_ExternCWrapperStream_" + _flavor, streamParameters.ToArray());
                         nativeMethodGridSync = GetNativeMethod(typeBuilder, symbol + "_ExternCWrapperGridSync_" + _flavor, nativeParameters.ToArray());
                         nativeMethodStreamGridSync = GetNativeMethod(typeBuilder, symbol + "_ExternCWrapperStreamGridSync_" + _flavor, streamParameters.ToArray());
@@ -1180,6 +1237,9 @@ namespace Hybridizer.Runtime.CUDAImports
                 ilgen.Emit(OpCodes.Ldarg_0);
                 ilgen.Emit(OpCodes.Ldfld, runtimeField);
                 ilgen.Emit(OpCodes.Call, typeof(HybRunner).GetProperty("GridDimY", bindingFlags).GetGetMethod());
+                ilgen.Emit(OpCodes.Ldarg_0);
+                ilgen.Emit(OpCodes.Ldfld, runtimeField);
+                ilgen.Emit(OpCodes.Call, typeof(HybRunner).GetProperty("GridDimZ", bindingFlags).GetGetMethod());
                 ilgen.Emit(OpCodes.Ldarg_0);
                 ilgen.Emit(OpCodes.Ldfld, runtimeField);
                 ilgen.Emit(OpCodes.Call, typeof(HybRunner).GetProperty("BlockDimX", bindingFlags).GetGetMethod());
