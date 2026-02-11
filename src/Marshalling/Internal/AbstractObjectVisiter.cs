@@ -23,7 +23,7 @@ namespace Hybridizer.Runtime.CUDAImports
         {
             protected NativeSerializerState serState;
 
-            internal abstract IntPtr VisitObject(object o, IntPtr da);
+            internal abstract IntPtr VisitObject(object o, IntPtr da, bool skipMemcpy = false);
             protected abstract FieldVisitor CreateFieldVisitor();
 
             protected AbstractObjectVisiter(NativeSerializerState state)
@@ -38,7 +38,7 @@ namespace Hybridizer.Runtime.CUDAImports
             /// </summary>
             /// <param name="param"></param>
             /// <returns></returns>
-            public abstract IntPtr InitialVisit(object param);
+            public abstract IntPtr InitialVisit(object param, bool skipMemcpy = false);
         }
     }
 }

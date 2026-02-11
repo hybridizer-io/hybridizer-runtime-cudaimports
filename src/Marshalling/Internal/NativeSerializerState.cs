@@ -58,16 +58,23 @@ namespace Hybridizer.Runtime.CUDAImports
             this.CreatingThreadId = Thread.CurrentThread.Name;
         }
 
-        internal virtual IntPtr MarshalManagedToNative(object param)
+        internal virtual IntPtr MarshalManagedToNative(object param, bool skipMemcpy = false)
         {
-            return serializer.InitialVisit(param);
+            return serializer.InitialVisit(param, skipMemcpy);
         }
 
-        internal void UpdateManagedData(object param)
+        internal void UpdateManagedData(object param, bool skipMemcpy = false)
         {
             try
             {
-                deserializer.InitialVisit(param);
+                if (skipMemcpy)
+                {
+                    FreeObjectGraph(param);
+                }
+                else
+                {
+                    deserializer.InitialVisit(param);
+                }
             }
             catch (Exception ex)
             {
@@ -76,10 +83,10 @@ namespace Hybridizer.Runtime.CUDAImports
             }
         }
 
-        internal virtual void RemoveNative(IntPtr native)
+        internal virtual void RemoveNative(IntPtr native, bool skipMemcpy = false)
         {
             // Console.WriteLine("Remove native thread:{0} marshaller:{1}", Thread.CurrentThread.Name, this.CreatingThreadId);
-            
+
             try
             {
                 object managed = null;
@@ -104,7 +111,14 @@ namespace Hybridizer.Runtime.CUDAImports
                 }
                 if (managed == null) return;
 
-                deserializer.InitialVisit(managed);
+                if (skipMemcpy)
+                {
+                    FreeObjectGraph(managed);
+                }
+                else
+                {
+                    deserializer.InitialVisit(managed);
+                }
             }
             catch (Exception ex)
             {
@@ -124,7 +138,7 @@ namespace Hybridizer.Runtime.CUDAImports
             ghosts.Clear();
         }
 
-        internal IntPtr MarshalNonPrimitiveParameter(Type t, object param)
+        internal IntPtr MarshalNonPrimitiveParameter(Type t, object param, bool skipMemcpy = false)
         {
             try
             {
@@ -132,7 +146,7 @@ namespace Hybridizer.Runtime.CUDAImports
                     throw new NotSupportedException(string.Format("Type {0} is not supported for marshalling", t.FullName));
                 if (param == null)
                     return IntPtr.Zero;
-                return MarshalManagedToNative(param);
+                return MarshalManagedToNative(param, skipMemcpy);
             }
             catch (Exception ex)
             {
@@ -164,6 +178,46 @@ namespace Hybridizer.Runtime.CUDAImports
         internal virtual void RemoveObject(object p)
         {
             if (p != null) ghosts.Remove(p);
+        }
+
+        internal void FreeObjectGraph(object param)
+        {
+            if (param == null) return;
+            if (!ghosts.ContainsKey(param)) return;
+
+            Type type = param.GetType();
+            if (type.IsArray)
+            {
+                Type elemType = type.GetElementType();
+                if (!elemType.IsPrimitive && !elemType.IsValueType)
+                {
+                    foreach (object elem in (Array)param)
+                        FreeObjectGraph(elem);
+                }
+            }
+            else if (type.IsClass || type.IsInterface)
+            {
+                foreach (var fd in OrderedFields(type))
+                {
+                    if (fd.Info == null) continue;
+                    if (fd.FieldType.IsArray || fd.FieldType.IsClass || fd.FieldType.IsInterface)
+                    {
+                        object subObj = fd.Info.GetValue(param);
+                        FreeObjectGraph(subObj);
+                    }
+                }
+            }
+
+            // Also clean up directlyMappedArrayHandles if present
+            GCHandle handle;
+            if (directlyMappedArrayHandles.TryGetValue(param, out handle))
+            {
+                handle.Free();
+                directlyMappedArrayPtr.Remove(param);
+                directlyMappedArrayHandles.Remove(param);
+            }
+
+            RemoveObject(param);
         }
 
         internal static void WriteHybArrayDimensions(Array array, int rank, BinaryWriter bw)

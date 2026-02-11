@@ -144,6 +144,14 @@ namespace Hybridizer.Runtime.CUDAImports
         /// </summary>
         public virtual IntPtr MarshalManagedToNative(object managedObj)
         {
+            return MarshalManagedToNative(managedObj, false);
+        }
+
+        /// <summary>
+        /// Marshals Managed to Native, optionally skipping memcpy (allocation only)
+        /// </summary>
+        public virtual IntPtr MarshalManagedToNative(object managedObj, bool skipMemcpy)
+        {
             if (managedObj == null)
                 return IntPtr.Zero;
             Stopwatch sw = null;
@@ -159,7 +167,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 return union._intPtr;
             }
 
-            IntPtr nativePtr = state.MarshalNonPrimitiveParameter(managedObj.GetType(), managedObj);
+            IntPtr nativePtr = state.MarshalNonPrimitiveParameter(managedObj.GetType(), managedObj, skipMemcpy);
             if (Debugger.IsAttached)
             {
                 sw.Stop();
@@ -173,8 +181,16 @@ namespace Hybridizer.Runtime.CUDAImports
         /// </summary>
         public void CleanUpNativeData(IntPtr pNativeData)
         {
+            CleanUpNativeData(pNativeData, false);
+        }
+
+        /// <summary>
+        /// cleanup native data, optionally skipping memcpy (free only)
+        /// </summary>
+        public void CleanUpNativeData(IntPtr pNativeData, bool skipMemcpy)
+        {
             if (!cleanUpNativeData) return;
-            state.RemoveNative(pNativeData);
+            state.RemoveNative(pNativeData, skipMemcpy);
         }
 
         /// <summary>
@@ -182,7 +198,15 @@ namespace Hybridizer.Runtime.CUDAImports
         /// </summary>
         public void CleanUpManagedData(object managedObj)
         {
-            state.UpdateManagedData(managedObj);
+            CleanUpManagedData(managedObj, false);
+        }
+
+        /// <summary>
+        /// cleanup managed data, optionally skipping memcpy (free only)
+        /// </summary>
+        public void CleanUpManagedData(object managedObj, bool skipMemcpy)
+        {
+            state.UpdateManagedData(managedObj, skipMemcpy);
         }
 
         /// <summary>

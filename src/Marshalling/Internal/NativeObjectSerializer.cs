@@ -153,20 +153,20 @@ namespace Hybridizer.Runtime.CUDAImports
                 }
             }
 
-            protected override void HandleObject(FieldTools.FieldDeclaration key, object param, IntPtr p)
+            protected override void HandleObject(FieldTools.FieldDeclaration key, object param, IntPtr p, bool skipMemcpy = false)
             {
-                IntPtr ptr = serializer.VisitObject(key.Info.GetValue(param), IntPtr.Zero);
+                IntPtr ptr = serializer.VisitObject(key.Info.GetValue(param), IntPtr.Zero, skipMemcpy);
                 HandlePtr(key, param, ptr);
             }
-            
-            protected override void HandleDelegate(FieldTools.FieldDeclaration key, object param, IntPtr p)
+
+            protected override void HandleDelegate(FieldTools.FieldDeclaration key, object param, IntPtr p, bool skipMemcpy = false)
             {
                 if(key.Info.GetValue(param) != null) {
                     Delegate del = key.Info.GetValue(param) as Delegate;
                     IntPtr ptr = IntPtr.Zero;
                     if (param != del.Target)
                     {
-                        ptr = serializer.VisitObject(del.Target, IntPtr.Zero);
+                        ptr = serializer.VisitObject(del.Target, IntPtr.Zero, skipMemcpy);
                     }
                     else
                     {
@@ -222,7 +222,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 Pad64(bw);
             }
 
-            internal override void start(object param, Type type, IntPtr da)
+            internal override void start(object param, Type type, IntPtr da, bool skipMemcpy = false)
             {
             }
         }

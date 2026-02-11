@@ -65,7 +65,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 this.state = state;
             }
 
-            protected override IntPtr SerializeObjectArray(object param, uint size)
+            protected override IntPtr SerializeObjectArray(object param, uint size, bool skipMemcpy = false)
             {
                 IntPtr[] numArray = DeepSerializeArray(param as Array);
                 var gcHandle = GCHandle.Alloc(numArray, GCHandleType.Pinned);
@@ -80,7 +80,7 @@ namespace Hybridizer.Runtime.CUDAImports
             /// </summary>
             /// <param name="ap">Array of objects</param>
             /// <returns>an array of pointers pointing to native memory</returns>
-            protected override IntPtr[] DeepSerializeArray(Array ap)
+            protected override IntPtr[] DeepSerializeArray(Array ap, bool skipMemcpy = false)
             {
                 var numArray = new IntPtr[GetElementCount(ap)];
                 int num1 = 0;
@@ -103,7 +103,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 return numArray;
             }
 
-            protected override IntPtr BinaryCopyArray(object param, uint size)
+            protected override IntPtr BinaryCopyArray(object param, uint size, bool skipMemcpy = false)
             {
                 bool blittable = true;
                 GCHandle handle = new GCHandle();
@@ -135,7 +135,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 return dev;
             }
 
-            protected override IntPtr SerializeCustom(ICustomMarshalled customMarshalled)
+            protected override IntPtr SerializeCustom(ICustomMarshalled customMarshalled, bool skipMemcpy = false)
             {
                 MainMemoryObjectSerializer os = new MainMemoryObjectSerializer(state, state.serializer);
                 os.MarshalICustomMarshalled(customMarshalled);
@@ -198,7 +198,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 return dev;
             }
 
-            internal override void CopyObject(object param, IntPtr dev)
+            internal override void CopyObject(object param, IntPtr dev, bool skipMemcpy = false)
             {
             }
         }
@@ -216,7 +216,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 this.state = state;
             }
 
-            protected override void DeserializeRawData(byte[] data, IntPtr da, long size)
+            protected override void DeserializeRawData(byte[] data, IntPtr da, long size, bool skipMemcpy = false)
             {
                 if(size > int.MaxValue) {
                     Console.WriteLine("WARNING : cannot yet deserialize more than 2GB of raw data");
@@ -224,7 +224,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 Marshal.Copy(da, data, 0, (int)size);
             }
 
-            protected override void DeserializeArray(object param, IntPtr da, Type type)
+            protected override void DeserializeArray(object param, IntPtr da, Type type, bool skipMemcpy = false)
             {
                 if (type.GetElementType().IsPrimitive || type.GetElementType().IsValueType)
                 {
@@ -291,7 +291,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 this.state = state;
             }
 
-            internal override void start(object param, Type type, IntPtr da)
+            internal override void start(object param, Type type, IntPtr da, bool skipMemcpy = false)
             {
                 var buffer = state.serialized_objects[param];
 

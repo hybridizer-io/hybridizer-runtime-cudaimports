@@ -35,14 +35,14 @@ namespace Hybridizer.Runtime.CUDAImports
 
         #region CUDA Serialization
 
-        internal override void RemoveNative(IntPtr native)
+        internal override void RemoveNative(IntPtr native, bool skipMemcpy = false)
         {
             cudaError_t cuer = cuda.GetLastError();
             if (cuer != cudaError_t.cudaSuccess)
             {
                 throw new ApplicationException(String.Format("CUDA error {0} - unmarshalling impossible", cuer));
             }
-            base.RemoveNative(native);
+            base.RemoveNative(native, skipMemcpy);
         }
 
         internal override void RemoveObject(object p)
@@ -65,27 +65,29 @@ namespace Hybridizer.Runtime.CUDAImports
             {
             }
 
-            public override IntPtr InitialVisit(object param)
+            public override IntPtr InitialVisit(object param, bool skipMemcpy = false)
             {
                 CudaSerState.InitializeStream();
-                IntPtr res = base.InitialVisit(param);
+                IntPtr res = base.InitialVisit(param, skipMemcpy);
                 CudaSerState.StreamSynchronize();
                 return res;
             }
 
-            protected override IntPtr SerializeObjectArray(object param, uint size)
+            protected override IntPtr SerializeObjectArray(object param, uint size, bool skipMemcpy = false)
             {
                 IntPtr dev;
-                IntPtr[] numArray = DeepSerializeArray(param as Array);
-                var gcHandle = GCHandle.Alloc(numArray, GCHandleType.Pinned);
+                IntPtr[] numArray = DeepSerializeArray(param as Array, skipMemcpy);
                 if (CudaSerState.cuda.Malloc(out dev, size) != cudaError_t.cudaSuccess)
                     Logger.WriteLine("CUDA Error {0} Allocating {1} bytes", CudaSerState.cuda.GetLastError(), size);
 #if DEBUG_ALLOC
                 Logger.WriteLine("Allocated {1} bytes @{0:X} -- {2}", dev.ToInt64(), size, param.GetType().FullName);
 #endif
-                IntPtr src = Marshal.UnsafeAddrOfPinnedArrayElement(numArray, 0);
-
-                CudaSerState.CudaMemCopy(dev, src, size, cudaMemcpyKind.cudaMemcpyHostToDevice, gcHandle);
+                if (!skipMemcpy)
+                {
+                    var gcHandle = GCHandle.Alloc(numArray, GCHandleType.Pinned);
+                    IntPtr src = Marshal.UnsafeAddrOfPinnedArrayElement(numArray, 0);
+                    CudaSerState.CudaMemCopy(dev, src, size, cudaMemcpyKind.cudaMemcpyHostToDevice, gcHandle);
+                }
                 return dev;
             }
 
@@ -94,7 +96,7 @@ namespace Hybridizer.Runtime.CUDAImports
             /// </summary>
             /// <param name="ap">Array of objects</param>
             /// <returns>an array of pointers pointing to native memory</returns>
-            protected override IntPtr[] DeepSerializeArray(Array ap)
+            protected override IntPtr[] DeepSerializeArray(Array ap, bool skipMemcpy = false)
             {
                 var numArray = new IntPtr[GetElementCount(ap)];
                 int num1 = 0;
@@ -112,7 +114,7 @@ namespace Hybridizer.Runtime.CUDAImports
                         }
                         else
                         {
-                            IntPtr num2 = VisitObject(key, IntPtr.Zero);
+                            IntPtr num2 = VisitObject(key, IntPtr.Zero, skipMemcpy);
                             numArray[num1++] = new IntPtr((long)num2);
                         }
                     }
@@ -120,30 +122,9 @@ namespace Hybridizer.Runtime.CUDAImports
                 return numArray;
             }
 
-            protected override IntPtr BinaryCopyArray(object param, uint size)
+            protected override IntPtr BinaryCopyArray(object param, uint size, bool skipMemcpy = false)
             {
                 IntPtr dev;
-                IntPtr src = IntPtr.Zero;
-                bool blittable = true;
-                GCHandle handle = new GCHandle();
-                // in case of non-blittable data -> marshal by hand
-                try
-                {
-                    handle = GCHandle.Alloc(param, GCHandleType.Pinned);
-                    src = Marshal.UnsafeAddrOfPinnedArrayElement(param as Array, 0);
-                }
-                catch (ArgumentException)
-                {
-                    blittable = false;
-                }
-
-                if (!blittable)
-                {
-                    // in case of non-blittable data -> marshal by hand
-                    byte[] data = SerializeNonBlittableArray(param as Array) ;
-                    handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-                    src = Marshal.UnsafeAddrOfPinnedArrayElement(data as Array, 0);
-                }
 
                 if (CudaSerState.cuda.Malloc(out dev, size) != cudaError_t.cudaSuccess)
                 {
@@ -161,19 +142,44 @@ namespace Hybridizer.Runtime.CUDAImports
                 Logger.WriteLine("Allocated {1} bytes @{0:X} -- {2}", dev.ToInt64(), size, param.GetType().FullName);
 #endif
 
-                CudaSerState.CudaMemCopy(dev, src, size, cudaMemcpyKind.cudaMemcpyHostToDevice, handle);
-                
+                if (!skipMemcpy)
+                {
+                    IntPtr src = IntPtr.Zero;
+                    bool blittable = true;
+                    GCHandle handle = new GCHandle();
+                    // in case of non-blittable data -> marshal by hand
+                    try
+                    {
+                        handle = GCHandle.Alloc(param, GCHandleType.Pinned);
+                        src = Marshal.UnsafeAddrOfPinnedArrayElement(param as Array, 0);
+                    }
+                    catch (ArgumentException)
+                    {
+                        blittable = false;
+                    }
+
+                    if (!blittable)
+                    {
+                        // in case of non-blittable data -> marshal by hand
+                        byte[] data = SerializeNonBlittableArray(param as Array) ;
+                        handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+                        src = Marshal.UnsafeAddrOfPinnedArrayElement(data as Array, 0);
+                    }
+
+                    CudaSerState.CudaMemCopy(dev, src, size, cudaMemcpyKind.cudaMemcpyHostToDevice, handle);
+                }
+
                 return dev;
             }
 
-            protected override IntPtr SerializeCustom(ICustomMarshalled customMarshalled)
+            protected override IntPtr SerializeCustom(ICustomMarshalled customMarshalled, bool skipMemcpy = false)
             {
                 var size = FieldTools.SizeOf(customMarshalled.GetType());
-                var buffer = new byte[size];    
+                var buffer = new byte[size];
                 var memoryStream = new MemoryStream(buffer);
                 var br = new BinaryWriter(memoryStream);
                 customMarshalled.MarshalTo(br, serState.nativePtrConverter.Flavor);
-                return BinaryCopyArray(buffer, (uint)size);
+                return BinaryCopyArray(buffer, (uint)size, skipMemcpy);
             }
 
             internal override void Free(IntPtr ptr)
@@ -238,13 +244,16 @@ namespace Hybridizer.Runtime.CUDAImports
                 return dev;
             }
 
-            internal override void CopyObject(object param, IntPtr dev)
+            internal override void CopyObject(object param, IntPtr dev, bool skipMemcpy = false)
             {
-                var size = (uint)ms.Length;
-                byte[] numArray = ms.ToArray();
-                var gcHandle = GCHandle.Alloc(numArray, GCHandleType.Pinned);
-                IntPtr src = Marshal.UnsafeAddrOfPinnedArrayElement(numArray, 0);
-                CudaSerState.CudaMemCopy(dev, src, size, cudaMemcpyKind.cudaMemcpyHostToDevice, gcHandle);
+                if (!skipMemcpy)
+                {
+                    var size = (uint)ms.Length;
+                    byte[] numArray = ms.ToArray();
+                    var gcHandle = GCHandle.Alloc(numArray, GCHandleType.Pinned);
+                    IntPtr src = Marshal.UnsafeAddrOfPinnedArrayElement(numArray, 0);
+                    CudaSerState.CudaMemCopy(dev, src, size, cudaMemcpyKind.cudaMemcpyHostToDevice, gcHandle);
+                }
             }
         }
 
@@ -261,14 +270,14 @@ namespace Hybridizer.Runtime.CUDAImports
             {
             }
 
-            protected override void DeserializeRawData(byte[] data, IntPtr da, long size)
+            protected override void DeserializeRawData(byte[] data, IntPtr da, long size, bool skipMemcpy = false)
             {
                 GCHandle gcHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
                 CudaSerState.CudaMemCopy(Marshal.UnsafeAddrOfPinnedArrayElement(data, 0), da, size,
                             cudaMemcpyKind.cudaMemcpyDeviceToHost, gcHandle);
             }
 
-            protected override void DeserializeArray(object param, IntPtr da, Type type)
+            protected override void DeserializeArray(object param, IntPtr da, Type type, bool skipMemcpy = false)
             {
                 uint elementCount = GetElementCount(param as Array);
                 int size = (int) (SizeOfArrayElt(type.GetElementType()) * elementCount);
@@ -337,12 +346,12 @@ namespace Hybridizer.Runtime.CUDAImports
                 }
             }
 
-            public override IntPtr InitialVisit(object param)
+            public override IntPtr InitialVisit(object param, bool skipMemcpy = false)
             {
                 if (CUDAImports.cuda.GetPeekAtLastError() != cudaError_t.cudaSuccess)
                     throw new ApplicationException("CUDA error occured before deserialization (most probably during kernel call): " + CUDAImports.cuda.GetErrorString(CUDAImports.cuda.GetPeekAtLastError()));
                 CudaSerState.InitializeStream();
-                IntPtr res = base.InitialVisit(param);
+                IntPtr res = base.InitialVisit(param, skipMemcpy);
                 CudaSerState.StreamSynchronize();
                 return res;
             }
@@ -357,7 +366,7 @@ namespace Hybridizer.Runtime.CUDAImports
 
             private CudaAbstractSerializationState CudaSerState { get { return (CudaAbstractSerializationState)serState; } }
 
-            internal override void start(object param, Type type, IntPtr da)
+            internal override void start(object param, Type type, IntPtr da, bool skipMemcpy = false)
             {
                 uint size = (uint)FieldTools.SizeOf(type);
                 long expected = serState.nativePtrConverter.Convert(type).ToInt64();
