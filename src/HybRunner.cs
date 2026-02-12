@@ -635,6 +635,7 @@ namespace Hybridizer.Runtime.CUDAImports
 
             _gridDimX = gridDimX;
             _gridDimY = gridDimY;
+            _gridDimZ = 1;
             _blockDimX = blockDimX;
             _blockDimY = blockDimY;
             _blockDimZ = blockDimZ;

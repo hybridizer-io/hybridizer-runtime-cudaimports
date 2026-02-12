@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using NUnit.Framework;
 using Hybridizer.Runtime.CUDAImports;
+using System.Runtime.CompilerServices;
 
 namespace Hybridizer.Runtime.CUDAImports.Tests;
 
@@ -511,6 +512,7 @@ public class CudaSkipMemcpyTests
         IntPtr ptr = marshaller.MarshalManagedToNative(instance, false);
         Assert.That(ptr, Is.Not.EqualTo(IntPtr.Zero));
         marshaller.CleanUpManagedData(instance, false);
+        Assert.That(cuda.DeviceSynchronize(), Is.EqualTo(cudaError_t.cudaSuccess));
     }
 
     [Test]
@@ -520,6 +522,7 @@ public class CudaSkipMemcpyTests
         IntPtr ptr = marshaller.MarshalManagedToNative(instance, true);
         Assert.That(ptr, Is.Not.EqualTo(IntPtr.Zero));
         marshaller.CleanUpManagedData(instance, true);
+        Assert.That(cuda.DeviceSynchronize(), Is.EqualTo(cudaError_t.cudaSuccess));
     }
 
     [Test]
@@ -529,6 +532,7 @@ public class CudaSkipMemcpyTests
         IntPtr ptr = marshaller.MarshalManagedToNative(array, false);
         Assert.That(ptr, Is.Not.EqualTo(IntPtr.Zero));
         marshaller.CleanUpManagedData(array, false);
+        Assert.That(cuda.DeviceSynchronize(), Is.EqualTo(cudaError_t.cudaSuccess));
     }
 
     [Test]
@@ -539,6 +543,7 @@ public class CudaSkipMemcpyTests
         IntPtr ptr = marshaller.MarshalManagedToNative(array, true);
         Assert.That(ptr, Is.Not.EqualTo(IntPtr.Zero));
         marshaller.CleanUpManagedData(array, true);
+        Assert.That(cuda.DeviceSynchronize(), Is.EqualTo(cudaError_t.cudaSuccess));
     }
 
     [Test]
@@ -551,18 +556,21 @@ public class CudaSkipMemcpyTests
         // [In] scenario: skip D→H on cleanup
         marshaller.CleanUpManagedData(instance, true);
         Assert.That(marshaller.IsClean(), Is.True);
+        Assert.That(cuda.DeviceSynchronize(), Is.EqualTo(cudaError_t.cudaSuccess));
     }
 
     [Test]
     public void CudaCleanUp_NoSkip_DeserializesBack()
     {
         var instance = new MyTestClass { Value = 42.0, Count = 7 };
-        marshaller.MarshalManagedToNative(instance, false);
+        IntPtr ptr = marshaller.MarshalManagedToNative(instance, false);
+        Assert.That(ptr, Is.Not.EqualTo(IntPtr.Zero));
 
         marshaller.CleanUpManagedData(instance, false);
         Assert.That(instance.Value, Is.EqualTo(42.0));
         Assert.That(instance.Count, Is.EqualTo(7));
         Assert.That(marshaller.IsClean(), Is.True);
+        Assert.That(cuda.DeviceSynchronize(), Is.EqualTo(cudaError_t.cudaSuccess));
     }
 
     [Test]
@@ -574,17 +582,19 @@ public class CudaSkipMemcpyTests
 
         marshaller.CleanUpManagedData(output, false); // normal D→H
         Assert.That(marshaller.IsClean(), Is.True);
+        Assert.That(cuda.DeviceSynchronize(), Is.EqualTo(cudaError_t.cudaSuccess));
     }
 
     [Test]
     public void CudaSimulateInOnly_NormalMarshal_SkipCleanup()
     {
-        double[] input = { 1.0, 2.0, 3.0 };
+        double[] input = [1.0, 2.0, 3.0];
         IntPtr ptr = marshaller.MarshalManagedToNative(input, false); // normal H→D
         Assert.That(ptr, Is.Not.EqualTo(IntPtr.Zero));
 
         marshaller.CleanUpManagedData(input, true); // skip D→H
         Assert.That(marshaller.IsClean(), Is.True);
+        Assert.That(cuda.DeviceSynchronize(), Is.EqualTo(cudaError_t.cudaSuccess));
     }
 
     [Test]
@@ -592,14 +602,16 @@ public class CudaSkipMemcpyTests
     {
         var instance = new MyClassWithNestedArray
         {
-            Data = new double[] { 1.0, 2.0, 3.0 },
+            Data = [1.0, 2.0, 3.0],
             Factor = 2.0
         };
-        marshaller.MarshalManagedToNative(instance, false);
+        IntPtr ptr = marshaller.MarshalManagedToNative(instance, false);
         Assert.That(marshaller.NbelementsInGhost, Is.GreaterThan(1));
+        Assert.That(ptr, Is.Not.EqualTo(IntPtr.Zero));
 
         marshaller.CleanUpManagedData(instance, true);
         Assert.That(marshaller.IsClean(), Is.True);
+        Assert.That(cuda.DeviceSynchronize(), Is.EqualTo(cudaError_t.cudaSuccess));
     }
 
     [Test]
@@ -607,9 +619,11 @@ public class CudaSkipMemcpyTests
     {
         var instance = new MyTestClass { Value = 42.0, Count = 7 };
         IntPtr ptr = marshaller.MarshalManagedToNative(instance, false);
+        Assert.That(ptr, Is.Not.EqualTo(IntPtr.Zero));
 
         marshaller.CleanUpNativeData(ptr, true);
         Assert.That(marshaller.IsClean(), Is.True);
+        Assert.That(cuda.DeviceSynchronize(), Is.EqualTo(cudaError_t.cudaSuccess));
     }
 
     [Test]
@@ -617,9 +631,10 @@ public class CudaSkipMemcpyTests
     {
         var instance = new MyTestClass { Value = 42.0, Count = 7 };
         IntPtr ptr = marshaller.MarshalManagedToNative(instance, false);
-
+        Assert.That(ptr, Is.Not.EqualTo(IntPtr.Zero));
         marshaller.CleanUpNativeData(ptr, false);
         Assert.That(marshaller.IsClean(), Is.True);
+        Assert.That(cuda.DeviceSynchronize(), Is.EqualTo(cudaError_t.cudaSuccess));
     }
 }
 
