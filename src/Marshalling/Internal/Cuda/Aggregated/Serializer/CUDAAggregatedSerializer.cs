@@ -28,7 +28,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 this.state = state;
             }
 
-            public override IntPtr InitialVisit(object param)
+            public override IntPtr InitialVisit(object param, bool skipMemcpy = false)
             {
                 if (param == null)
                     return IntPtr.Zero;
@@ -45,19 +45,21 @@ namespace Hybridizer.Runtime.CUDAImports
                 var allocator = state.createAllocator(param, sizeCalculator.totalSize);
                 //_allAllocators[new WeakReference(param)] = allocator;
                 state._currentAllocator = allocator;
-                IntPtr res = base.InitialVisit(param);
-                allocator.copyBuffer();
+                IntPtr res = base.InitialVisit(param, skipMemcpy);
+                if (!skipMemcpy)
+                    allocator.copyBuffer();
                 state.StreamSynchronize();
                 allocator.freeBuffer();
                 return res;
             }
 
-            protected override IntPtr SerializeObjectArray(object param, uint size)
+            protected override IntPtr SerializeObjectArray(object param, uint size, bool skipMemcpy = false)
             {
-                IntPtr[] numArray = DeepSerializeArray(param as Array);
+                IntPtr[] numArray = DeepSerializeArray(param as Array, skipMemcpy);
 
                 IntPtr dev = state._currentAllocator.allocate(param, size);
-                state._currentAllocator.cpy(dev, numArray, size);
+                if (!skipMemcpy)
+                    state._currentAllocator.cpy(dev, numArray, size);
                 return dev;
             }
 
@@ -66,7 +68,7 @@ namespace Hybridizer.Runtime.CUDAImports
             /// </summary>
             /// <param name="ap">Array of objects</param>
             /// <returns>an array of pointers pointing to native memory</returns>
-            protected override IntPtr[] DeepSerializeArray(Array ap)
+            protected override IntPtr[] DeepSerializeArray(Array ap, bool skipMemcpy = false)
             {
                 var numArray = new IntPtr[GetElementCount(ap)];
                 int num1 = 0;
@@ -82,21 +84,22 @@ namespace Hybridizer.Runtime.CUDAImports
                     }
                     else
                     {
-                        IntPtr num2 = VisitObject(key, IntPtr.Zero);
+                        IntPtr num2 = VisitObject(key, IntPtr.Zero, skipMemcpy);
                         numArray[num1++] = new IntPtr((long)num2);
                     }
                 }
                 return numArray;
             }
 
-            protected override IntPtr BinaryCopyArray(object param, uint size)
+            protected override IntPtr BinaryCopyArray(object param, uint size, bool skipMemcpy = false)
             {
                 IntPtr dev = state._currentAllocator.allocate(param, size);
-                state._currentAllocator.cpy(dev, param as Array, size);
+                if (!skipMemcpy)
+                    state._currentAllocator.cpy(dev, param as Array, size);
                 return dev;
             }
 
-            protected override IntPtr SerializeCustom(ICustomMarshalled customMarshalled)
+            protected override IntPtr SerializeCustom(ICustomMarshalled customMarshalled, bool skipMemcpy = false)
             {
                 throw new NotImplementedException();
             }

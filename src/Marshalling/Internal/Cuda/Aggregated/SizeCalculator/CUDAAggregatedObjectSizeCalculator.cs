@@ -91,7 +91,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 s.addSize(8);
             }
 
-            protected override void HandleObject(FieldTools.FieldDeclaration key, object param, IntPtr p)
+            protected override void HandleObject(FieldTools.FieldDeclaration key, object param, IntPtr p, bool skipMemcpy = false)
             {
                 IntPtr ptr = serializer.VisitObject(key.Info.GetValue(param), IntPtr.Zero);
                 HandlePtr(key, param, ptr);
@@ -137,7 +137,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 return IntPtr.Zero;
             }
 
-            internal override void CopyObject(object param, IntPtr dev)
+            internal override void CopyObject(object param, IntPtr dev, bool skipMemcpy = false)
             {
             }
         }
