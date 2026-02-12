@@ -30,9 +30,9 @@ namespace Hybridizer.Runtime.CUDAImports
                 this.state = state;
             }
 
-            internal override void start(object param, Type type, IntPtr da)
+            internal override void start(object param, Type type, IntPtr da, bool skipMemcpy = false)
             {
-                base.start(param, type, da);
+                base.start(param, type, da, skipMemcpy);
                 long size = serState.nativePtrConverter.GetTypeInfo(param.GetType()).size;
                 if (size <= MAX_SIZE_FOR_AGGREGATION)
                 {
@@ -59,9 +59,9 @@ namespace Hybridizer.Runtime.CUDAImports
                 return dev;
             }
 
-            internal override void CopyObject(object param, IntPtr dev)
+            internal override void CopyObject(object param, IntPtr dev, bool skipMemcpy = false)
             {
-                if (directlyWrittenToBuffer == IntPtr.Zero)
+                if (!skipMemcpy && directlyWrittenToBuffer == IntPtr.Zero)
                 {
                     byte[] numArray = ms.ToArray();
                     var gcHandle = GCHandle.Alloc(numArray, GCHandleType.Pinned);

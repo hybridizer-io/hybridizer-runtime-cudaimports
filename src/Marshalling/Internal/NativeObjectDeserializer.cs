@@ -36,7 +36,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 return IntPtr.Zero;
             }
 
-            internal override void CopyObject(object param, IntPtr dev)
+            internal override void CopyObject(object param, IntPtr dev, bool skipMemcpy = false)
             {
             }
 
@@ -169,7 +169,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 }
             }
 
-            protected override void HandleObject(FieldTools.FieldDeclaration key, object param, IntPtr p)
+            protected override void HandleObject(FieldTools.FieldDeclaration key, object param, IntPtr p, bool skipMemcpy = false)
             {
 
                 object target = key.Info.GetValue(param);
@@ -178,7 +178,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 {
                     long readInt64 = Unpad64(br, false).ReadInt64();
                     IntPtr devP = new IntPtr(readInt64);
-                    IntPtr unused = deserializer.VisitObject(target, devP);
+                    IntPtr unused = deserializer.VisitObject(target, devP, skipMemcpy);
                     if (CudaRuntimeProperties.UseHybridArrays && target != null && target is Array)
                     {
                         // Advance in buffer to get rid of array dimensions
@@ -216,7 +216,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 }
             }
 
-            protected override void HandleDelegate(FieldTools.FieldDeclaration key, object param, IntPtr p)
+            protected override void HandleDelegate(FieldTools.FieldDeclaration key, object param, IntPtr p, bool skipMemcpy = false)
             {
                 if (key.Info.GetValue(param) != null)
                 {

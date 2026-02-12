@@ -91,13 +91,13 @@ namespace Hybridizer.Runtime.CUDAImports
 
         const int RTLD_LAZY = 1;
         const int RTLD_NOW = 2;
-        [DllImport("libdl.so", CharSet=CharSet.Ansi)]
+        [DllImport("libdl.so.2", CharSet=CharSet.Ansi)]
         private static extern IntPtr dlopen(String fileName, int flags);
-        [DllImport("libdl.so")]
+        [DllImport("libdl.so.2")]
         private static extern IntPtr dlsym(IntPtr handle, String symbol);
-        [DllImport("libdl.so")]
+        [DllImport("libdl.so.2")]
         private static extern int dlclose(IntPtr handle);
-        [DllImport("libdl.so")]
+        [DllImport("libdl.so.2")]
         private static extern IntPtr dlerror();
     }
 

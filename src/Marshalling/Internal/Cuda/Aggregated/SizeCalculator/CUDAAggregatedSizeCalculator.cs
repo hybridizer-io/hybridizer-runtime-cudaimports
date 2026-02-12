@@ -46,7 +46,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 totalSize += size;
             }
 
-            protected override IntPtr SerializeObjectArray(object param, uint size)
+            protected override IntPtr SerializeObjectArray(object param, uint size, bool skipMemcpy = false)
             {
                 DeepSerializeArray(param as Array);
                 totalSize += size;
@@ -59,7 +59,7 @@ namespace Hybridizer.Runtime.CUDAImports
             /// </summary>
             /// <param name="ap">Array of objects</param>
             /// <returns>an array of pointers pointing to native memory</returns>
-            protected override IntPtr[] DeepSerializeArray(Array ap)
+            protected override IntPtr[] DeepSerializeArray(Array ap, bool skipMemcpy = false)
             {
                 foreach (object key in ap)
                 {
@@ -71,7 +71,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 return null;
             }
 
-            protected override IntPtr BinaryCopyArray(object param, uint size)
+            protected override IntPtr BinaryCopyArray(object param, uint size, bool skipMemcpy = false)
             {
                 if (size < MAX_SIZE_FOR_AGGREGATION)
                 {
@@ -81,13 +81,13 @@ namespace Hybridizer.Runtime.CUDAImports
                 return IntPtr.Zero;
             }
 
-            protected override IntPtr SerializeCustom(ICustomMarshalled o)
+            protected override IntPtr SerializeCustom(ICustomMarshalled o, bool skipMemcpy = false)
             {
                 totalSize += FieldTools.SizeOf(o.GetType());
                 return IntPtr.Zero;
             }
 
-            protected override IntPtr SerializeCustom(IHybCustomMarshaler marshaler, object customMarshalled)
+            protected override IntPtr SerializeCustom(IHybCustomMarshaler marshaler, object customMarshalled, bool skipMemcpy = false)
             {
                 totalSize += marshaler.SizeOf(customMarshalled);
                 pad64();
@@ -109,7 +109,7 @@ namespace Hybridizer.Runtime.CUDAImports
 
             }
 
-            protected override IntPtr WrapArray(Array array, IntPtr res)
+            protected override IntPtr WrapArray(Array array, IntPtr res, bool skipMemcpy = false)
             {
                 int rank = array.Rank;
                 totalSize += rank*8;

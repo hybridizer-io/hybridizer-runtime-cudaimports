@@ -54,7 +54,7 @@ namespace Hybridizer.Runtime.CUDAImports
                     return IntPtr.Zero ;
                 }
 
-                internal override void CopyObject(object param, IntPtr dev)
+                internal override void CopyObject(object param, IntPtr dev, bool skipMemcpy = false)
                 {
                 }
 
@@ -70,7 +70,7 @@ namespace Hybridizer.Runtime.CUDAImports
                     : base(state, ser)
                 { }
 
-                internal override void start(object param, Type type, IntPtr da)
+                internal override void start(object param, Type type, IntPtr da, bool skipMemcpy = false)
                 {
                 }
 
@@ -108,7 +108,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 return bytes;
             }
 
-            public override IntPtr InitialVisit(object param)
+            public override IntPtr InitialVisit(object param, bool skipMemcpy = false)
             {
                 if (typeof(ICustomMarshalled).IsAssignableFrom(param.GetType()) && param.GetType().IsValueType)
                 {
@@ -120,11 +120,11 @@ namespace Hybridizer.Runtime.CUDAImports
                     IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(buffer, 0);
                     serState.directlyMappedArrayPtr[param] = ptr;
                     return ptr;
-                } 
+                }
                 else if (param is Delegate) // Delegate as EntryPoint parameter
                 {
                     Delegate del = param as Delegate;
-                    IntPtr target = serState.serializer.VisitObject(del.Target, IntPtr.Zero);
+                    IntPtr target = serState.serializer.VisitObject(del.Target, IntPtr.Zero, skipMemcpy);
                     IntPtr fPtr = serState.nativePtrConverter.GetFunctionPointer(del.Method);
 
                     byte[] buffer = new byte[24];
@@ -139,7 +139,7 @@ namespace Hybridizer.Runtime.CUDAImports
                     serState.directlyMappedArrayPtr[del] = ptr;
                     return ptr;
                 }
-                IntPtr res = VisitObject(param, IntPtr.Zero);
+                IntPtr res = VisitObject(param, IntPtr.Zero, skipMemcpy);
                 if (param is Array && CudaRuntimeProperties.UseHybridArrays)
                 {
                     // Pass a ptr to a hybarray struct in CPU memory
@@ -149,7 +149,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 return res;
             }
 
-            protected virtual IntPtr WrapArray(Array array, IntPtr res)
+            protected virtual IntPtr WrapArray(Array array, IntPtr res, bool skipMemcpy = false)
             {
                 int rank = array.Rank;
                 byte[] buffer = new byte[8 + 8 * rank]; // 8 bytes for the ptr + 8 bytes per dimension (length and lowerbound)
@@ -163,7 +163,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 return ptr;
             }
             
-            internal unsafe override IntPtr VisitObject(object param, IntPtr da)
+            internal unsafe override IntPtr VisitObject(object param, IntPtr da, bool skipMemcpy = false)
             {
                 if (param == null)
                     return IntPtr.Zero;
@@ -172,7 +172,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 Type type = param.GetType();
                 if (typeof (ICustomMarshalled).IsAssignableFrom(type))
                 {
-                    IntPtr result = SerializeCustom(param as ICustomMarshalled);
+                    IntPtr result = SerializeCustom(param as ICustomMarshalled, skipMemcpy);
                     AddGhost(param, result);
                     return result;
                 }
@@ -188,11 +188,11 @@ namespace Hybridizer.Runtime.CUDAImports
                     uint size = SizeOfArrayElt(array.GetType().GetElementType()) * elementCount;
                     if (array.GetType().GetElementType().IsPrimitive || array.GetType().GetElementType().IsValueType)
                     {
-                        dev = BinaryCopyArray(array, size);
+                        dev = BinaryCopyArray(array, size, skipMemcpy);
                     }
                     else
                     {
-                        dev = SerializeObjectArray(array, size);
+                        dev = SerializeObjectArray(array, size, skipMemcpy);
                     }
 
                     AddGhost(param, dev);
@@ -202,15 +202,15 @@ namespace Hybridizer.Runtime.CUDAImports
                     return dev;
                 }
                 else if (typeof(Delegate).IsAssignableFrom(type))
-                { 
+                {
                     Delegate del = param as Delegate;
                     if (del == null)
                         throw new ApplicationException("INTERNAL ERROR - expecting delegate");
                     // delegates are arrays of two intptr
-                    IntPtr target = serState.serializer.VisitObject(del.Target, IntPtr.Zero);
+                    IntPtr target = serState.serializer.VisitObject(del.Target, IntPtr.Zero, skipMemcpy);
                     IntPtr fPtr = serState.nativePtrConverter.GetFunctionPointer(del.Method);
-                    IntPtr dev = BinaryCopyArray(new long[]{target.ToInt64(), fPtr.ToInt64(), 0L}, SizeOfArrayElt(typeof(long)) * 3) ;
-                    AddGhost(param, dev); 
+                    IntPtr dev = BinaryCopyArray(new long[]{target.ToInt64(), fPtr.ToInt64(), 0L}, SizeOfArrayElt(typeof(long)) * 3, skipMemcpy) ;
+                    AddGhost(param, dev);
                     return dev;
                 }
                 else
@@ -232,12 +232,12 @@ namespace Hybridizer.Runtime.CUDAImports
                     TypeInfo ti = serState.nativePtrConverter.GetTypeInfo(type);
                     if (ti.CustomMarshaler != null)
                     {
-                        return SerializeCustom(ti.CustomMarshaler, param);
+                        return SerializeCustom(ti.CustomMarshaler, param, skipMemcpy);
                     }
- 
+
                     FieldVisitor fv = CreateFieldVisitor();
-                    fv.start(param, type, da);
-                    fv.VisitFields(param, ti, overrides);
+                    fv.start(param, type, da, skipMemcpy);
+                    fv.VisitFields(param, ti, overrides, skipMemcpy);
                     IntPtr dev = fv.AllocateObject(param);
                     foreach (var pending in fv.pendingDelegateTargets)
                     {
@@ -247,7 +247,7 @@ namespace Hybridizer.Runtime.CUDAImports
                         pending.binaryWriter.Write(dev.ToInt64());
                         pending.binaryWriter.Seek((int)oldPosition, SeekOrigin.Begin);
                     }
-                    fv.CopyObject(param, dev);
+                    fv.CopyObject(param, dev, skipMemcpy);
 #if DEBUG_ALLOC
                     Logger.WriteLine("Object {0} serialized to {1:X}", param, dev.ToInt64());
 #endif
@@ -263,18 +263,18 @@ namespace Hybridizer.Runtime.CUDAImports
             protected abstract void SerializeResidentArray(Type type, Dictionary<FieldInfo, byte[]> overrides,
                 IResidentArray residentArray);
 
-            protected abstract IntPtr SerializeObjectArray(object param, uint size);
-            protected abstract IntPtr[] DeepSerializeArray(Array ap);
-            protected abstract IntPtr BinaryCopyArray(object param, uint size);
-            protected abstract IntPtr SerializeCustom(ICustomMarshalled customMarshalled);
-            protected virtual IntPtr SerializeCustom(IHybCustomMarshaler marshaler, object customMarshalled)
+            protected abstract IntPtr SerializeObjectArray(object param, uint size, bool skipMemcpy = false);
+            protected abstract IntPtr[] DeepSerializeArray(Array ap, bool skipMemcpy = false);
+            protected abstract IntPtr BinaryCopyArray(object param, uint size, bool skipMemcpy = false);
+            protected abstract IntPtr SerializeCustom(ICustomMarshalled customMarshalled, bool skipMemcpy = false);
+            protected virtual IntPtr SerializeCustom(IHybCustomMarshaler marshaler, object customMarshalled, bool skipMemcpy = false)
             {
                 var size = marshaler.SizeOf(customMarshalled);
                 var buffer = new byte[size];
                 var memoryStream = new MemoryStream(buffer);
                 var br = new BinaryWriter(memoryStream);
                 marshaler.MarshalTo(customMarshalled, br, serState.Marshaler);
-                return BinaryCopyArray(buffer, (uint)size);
+                return BinaryCopyArray(buffer, (uint)size, skipMemcpy);
             }
         }
     }

@@ -91,7 +91,7 @@ namespace Hybridizer.Runtime.CUDAImports
                     cudaError_t err = cuda.Memcpy(dst, src, size, kind);
                     if (err != cudaError_t.cudaSuccess)
                     {
-                        throw new ApplicationException(String.Format("Error while copying data {0} : ", err, cuda.GetErrorString(err)));
+                        throw new ApplicationException( String.Format("Error while copying data {0} : {1}", err, cuda.GetErrorString(err)));
                     }
                 }
                 if (registerHost) cuda.HostUnregister(hostPtr);

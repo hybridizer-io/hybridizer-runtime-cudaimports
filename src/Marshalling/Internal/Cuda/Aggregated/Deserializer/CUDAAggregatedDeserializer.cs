@@ -24,22 +24,22 @@ namespace Hybridizer.Runtime.CUDAImports
                 this.state = state;
             }
 
-            public override IntPtr InitialVisit(object param)
+            public override IntPtr InitialVisit(object param, bool skipMemcpy = false)
             {
                 state.InitializeStream();
-                IntPtr res = base.InitialVisit(param);
+                IntPtr res = base.InitialVisit(param, skipMemcpy);
                 state.StreamSynchronize();
                 return res;
 
             }
 
-            protected override void DeserializeRawData(byte[] data, IntPtr da, long size)
+            protected override void DeserializeRawData(byte[] data, IntPtr da, long size, bool skipMemcpy = false)
             {
                 var gcHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
                 state.CudaMemCopy(Marshal.UnsafeAddrOfPinnedArrayElement(data, 0), da, size, cudaMemcpyKind.cudaMemcpyDeviceToHost, gcHandle, false, true);
             }
 
-            protected override void DeserializeArray(object param, IntPtr da, Type type)
+            protected override void DeserializeArray(object param, IntPtr da, Type type, bool skipMemcpy = false)
             {
                 uint elementCount = GetElementCount(param as Array);
                 uint size = SizeOfArrayElt(type.GetElementType()) * elementCount;
