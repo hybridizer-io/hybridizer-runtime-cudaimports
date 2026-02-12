@@ -644,32 +644,6 @@ namespace Hybridizer.Runtime.CUDAImports
         }
 
         /// <summary>
-        /// Configures a launch (CUDA-only)
-        /// </summary>
-        /// <param name="gridDimX"></param>
-        /// <param name="gridDimY"></param>
-        /// <param name="gridDimZ"></param>
-        /// <param name="blockDimX"></param>
-        /// <param name="blockDimY"></param>
-        /// <param name="blockDimZ"></param>
-        /// <param name="shared"></param>
-        /// <returns></returns>
-        public HybRunner SetDistrib(int gridDimX, int gridDimY,  int gridDimZ, int blockDimX, int blockDimY, int blockDimZ, int shared)
-        {   
-            if (_flavor == HybridizerFlavor.AVX && (gridDimZ != 1 || gridDimY != 1 || blockDimX != 32 || blockDimY != 1 || blockDimZ != 1))
-                throw new ApplicationException("Invalid work distributions parameters");
-
-            _gridDimX = gridDimX;
-            _gridDimY = gridDimY;
-            _gridDimZ = gridDimZ;
-            _blockDimX = blockDimX;
-            _blockDimY = blockDimY;
-            _blockDimZ = blockDimZ;
-            _shared = shared;
-            return this;
-        }
-
-        /// <summary>
         /// Sets the shared memory size parameter for a launch (CUDA-only)
         /// </summary>
         /// <param name="shared"></param>
