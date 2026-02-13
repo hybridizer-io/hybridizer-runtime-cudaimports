@@ -26,7 +26,7 @@ namespace Hybridizer.Runtime.CUDAImports
             {
             }
 
-            public override IntPtr InitialVisit(object param)
+            public override IntPtr InitialVisit(object param, bool skipMemcpy = false)
             {
                 IntPtr dev;
                 if (param is Delegate) // Delegate as EntryPoint parameter
@@ -34,13 +34,13 @@ namespace Hybridizer.Runtime.CUDAImports
                     if (serState.cleanUpNativeData)
                     {
                         Delegate del = param as Delegate;
-                        InitialVisit(del.Target);
+                        InitialVisit(del.Target, skipMemcpy);
                     }
                     return IntPtr.Zero;
                 }
                 if (serState.ghosts.TryGetValue(param, out dev))
                 {
-                    return VisitObject(param, dev);
+                    return VisitObject(param, dev, skipMemcpy);
                 }
                 if (param is Array && CudaRuntimeProperties.UseHybridArrays)
                 {
@@ -56,20 +56,20 @@ namespace Hybridizer.Runtime.CUDAImports
                 return IntPtr.Zero;
             }
 
-            internal override IntPtr VisitObject(object param, IntPtr da)
+            internal override IntPtr VisitObject(object param, IntPtr da, bool skipMemcpy = false)
             {
-                VisitObjectInt(param, da);
+                VisitObjectInt(param, da, skipMemcpy);
                 return IntPtr.Zero;
             }
 
-            private void VisitObjectInt(object param, IntPtr da)
+            private void VisitObjectInt(object param, IntPtr da, bool skipMemcpy = false)
             {
                 if (param == null || !serState.ghosts.ContainsKey(param))
                     return;
                 Type type = param.GetType();
                 if (type.IsArray)
                 {
-                    DeserializeArray(param, da, type);
+                    DeserializeArray(param, da, type, skipMemcpy);
                     serState.RemoveObject(param);
                 }
                 else if (type == typeof (string))
@@ -85,7 +85,7 @@ namespace Hybridizer.Runtime.CUDAImports
                         // get size
                         long size = FieldTools.SizeOf(param.GetType());
                         byte[] data = new byte[size];
-                        DeserializeRawData(data, da, size);
+                        DeserializeRawData(data, da, size, skipMemcpy);
                         (param as ICustomMarshalled).UnmarshalFrom(new BinaryReader(new MemoryStream(data, false)), this.serState.nativePtrConverter.Flavor);
                         serState.RemoveObject(param);
                         return;
@@ -99,10 +99,10 @@ namespace Hybridizer.Runtime.CUDAImports
 
                     FieldVisitor fv = CreateFieldVisitor();
                     TypeInfo typeInfo = serState.nativePtrConverter.GetTypeInfo(type);
-                    fv.start(param, type, da);
-                    fv.VisitFields(param, typeInfo, overrides);
+                    fv.start(param, type, da, skipMemcpy);
+                    fv.VisitFields(param, typeInfo, overrides, skipMemcpy);
                     IntPtr ptr = fv.AllocateObject(param);
-                    fv.CopyObject(param, ptr);
+                    fv.CopyObject(param, ptr, skipMemcpy);
                 }
             }
 
@@ -119,9 +119,9 @@ namespace Hybridizer.Runtime.CUDAImports
                 }
             }
 
-            protected abstract void DeserializeArray(object param, IntPtr da, Type type);
+            protected abstract void DeserializeArray(object param, IntPtr da, Type type, bool skipMemcpy = false);
 
-            protected abstract void DeserializeRawData(byte[] data, IntPtr da, long size);
+            protected abstract void DeserializeRawData(byte[] data, IntPtr da, long size, bool skipMemcpy = false);
         }
     }
 }

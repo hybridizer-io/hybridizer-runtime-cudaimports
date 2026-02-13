@@ -33,7 +33,9 @@ namespace Hybridizer.Runtime.CUDAImports
         internal delegate HybridizerProperties HybridizerGetProperties();
 
         private delegate IntPtr MarshalManagedToNativeDel(object p);
+        private delegate IntPtr MarshalManagedToNativeSkipDel(object p, bool skipMemcpy);
         private delegate void CleanUpManagedDataDel(object p);
+        private delegate void CleanUpManagedDataSkipDel(object p, bool skipMemcpy);
         private delegate HandleDelegate GetHandleDelegateDel(Delegate p);
         private delegate bool GetCleanUpManagedDataDel();
 
@@ -99,20 +101,26 @@ namespace Hybridizer.Runtime.CUDAImports
 
         #region Marshaller methods
         static MethodInfo marshalManagedToNative;
+        static MethodInfo marshalManagedToNativeSkip;
         static MethodInfo getHandleDelegate;
         static MethodInfo cleanUpManagedData;
+        static MethodInfo cleanUpManagedDataSkip;
         static MethodInfo getCleanUpManagedData;
 
         private void initDelegates()
         {
             MarshalManagedToNativeDel marshallDel = _marshaller.MarshalManagedToNative;
+            MarshalManagedToNativeSkipDel marshalSkipDel = new MarshalManagedToNativeSkipDel(_marshaller.MarshalManagedToNative);
             CleanUpManagedDataDel cleanupDel = _marshaller.CleanUpManagedData;
+            CleanUpManagedDataSkipDel cleanupSkipDel = new CleanUpManagedDataSkipDel(_marshaller.CleanUpManagedData);
             GetHandleDelegateDel getHandleDelegateDel = _marshaller.GetHandleDelegate;
             GetCleanUpManagedDataDel GetCleanUpManagedDataDel = _marshaller.IsCleanUpNativeData;
 
             marshalManagedToNative = marshallDel.Method;
+            marshalManagedToNativeSkip = marshalSkipDel.Method;
             getHandleDelegate = getHandleDelegateDel.Method;
             cleanUpManagedData = cleanupDel.Method;
+            cleanUpManagedDataSkip = cleanupSkipDel.Method;
             getCleanUpManagedData = GetCleanUpManagedDataDel.Method;
         }
         #endregion
@@ -627,6 +635,7 @@ namespace Hybridizer.Runtime.CUDAImports
 
             _gridDimX = gridDimX;
             _gridDimY = gridDimY;
+            _gridDimZ = 1;
             _blockDimX = blockDimX;
             _blockDimY = blockDimY;
             _blockDimZ = blockDimZ;
@@ -645,8 +654,8 @@ namespace Hybridizer.Runtime.CUDAImports
         /// <param name="blockDimZ"></param>
         /// <param name="shared"></param>
         /// <returns></returns>
-        public HybRunner SetDistrib(int gridDimX, int gridDimY,  int gridDimZ, int blockDimX, int blockDimY, int blockDimZ, int shared)
-        {   
+        public HybRunner SetDistrib(int gridDimX, int gridDimY, int gridDimZ, int blockDimX, int blockDimY, int blockDimZ, int shared)
+        {
             if (_flavor == HybridizerFlavor.AVX && (gridDimZ != 1 || gridDimY != 1 || blockDimX != 32 || blockDimY != 1 || blockDimZ != 1))
                 throw new ApplicationException("Invalid work distributions parameters");
 
@@ -1106,14 +1115,15 @@ namespace Hybridizer.Runtime.CUDAImports
         }
 
         private void EmitMethod(ILGenerator ilgen, FieldInfo runtimeField, bool supportsOmp, MethodInfo toWrap,
-            FieldInfo wrappedObject, List<Type> wrappedParams, MethodBuilder nativeMetodOMP, 
-            MethodBuilder nativeMetod, MethodBuilder nativeMethodStream, MethodBuilder nativeMethodStreamGridSync, MethodBuilder nativeMethodGridSync, 
+            FieldInfo wrappedObject, List<Type> wrappedParams, MethodBuilder nativeMetodOMP,
+            MethodBuilder nativeMetod, MethodBuilder nativeMethodStream, MethodBuilder nativeMethodStreamGridSync, MethodBuilder nativeMethodGridSync,
             bool managedFallback)
         {
             BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
             MethodInfo marshallerGetter = typeof(HybRunner).GetProperty("Marshaller", bindingFlags).GetGetMethod();
             Label endOfMethod = ilgen.DefineLabel();
             LocalBuilder result = ilgen.DeclareLocal(typeof(int));
+            ParameterInfo[] parameters = toWrap.GetParameters();
 
 
             if (_marshaller is CudaMarshaler && managedFallback)
@@ -1143,7 +1153,7 @@ namespace Hybridizer.Runtime.CUDAImports
 
                 ilgen.MarkLabel(cudaLabel);
             }
-            
+
             if (supportsOmp)
             {
                 LocalBuilder isOmpCall = ilgen.DeclareLocal(typeof(bool));
@@ -1162,7 +1172,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 ilgen.Emit(OpCodes.Ldfld, runtimeField);
                 ilgen.Emit(OpCodes.Call,
                     typeof(HybRunner).GetProperty("GridDimX", bindingFlags).GetGetMethod());
-                AddParametersToStack(toWrap, ilgen, runtimeField, marshallerGetter, wrappedObject, wrappedParams);
+                AddParametersToStack(toWrap, ilgen, runtimeField, marshallerGetter, wrappedObject, wrappedParams, parameters);
                 ilgen.Emit(OpCodes.Call, nativeMetodOMP);
                 ilgen.Emit(OpCodes.Stloc, result);
                 var endOfCall = ilgen.DefineLabel();
@@ -1172,15 +1182,15 @@ namespace Hybridizer.Runtime.CUDAImports
                 // The non OMP version of the call
                 _stopWatchLastKernel.Start();
 
-                CallNativeMethod(ilgen, runtimeField, bindingFlags, toWrap, 
-                                marshallerGetter, wrappedObject, wrappedParams, 
+                CallNativeMethod(ilgen, runtimeField, bindingFlags, toWrap,
+                                marshallerGetter, wrappedObject, wrappedParams, parameters,
                                 nativeMetod, nativeMethodStream, nativeMethodStreamGridSync, nativeMethodGridSync, result);
                 ilgen.MarkLabel(endOfCall);
             }
             else
             {
-                CallNativeMethod(ilgen, runtimeField, bindingFlags, toWrap, 
-                    marshallerGetter, wrappedObject, wrappedParams, 
+                CallNativeMethod(ilgen, runtimeField, bindingFlags, toWrap,
+                    marshallerGetter, wrappedObject, wrappedParams, parameters,
                     nativeMetod, nativeMethodStream, nativeMethodStreamGridSync, nativeMethodGridSync, result);
             }
 
@@ -1205,16 +1215,26 @@ namespace Hybridizer.Runtime.CUDAImports
                 }
                 argIdx++;
 
-                foreach (Type pi in wrappedParams)
+                for (int i = 0; i < wrappedParams.Count; i++)
                 {
+                    Type pi = wrappedParams[i];
                     if (pi.IsClass || pi.IsInterface)
                     {
-                        // TODO: support manual cleanup here
+                        bool isInOnly = parameters[i].IsIn && !parameters[i].IsOut;
+
                         ilgen.Emit(OpCodes.Ldarg_0);
                         ilgen.Emit(OpCodes.Ldfld, runtimeField);
                         ilgen.Emit(OpCodes.Call, marshallerGetter);
                         ilgen.Emit(OpCodes.Ldarg, argIdx);
-                        ilgen.Emit(OpCodes.Call, cleanUpManagedData);
+                        if (isInOnly)
+                        {
+                            ilgen.Emit(OpCodes.Ldc_I4_1); // skipMemcpy = true
+                            ilgen.Emit(OpCodes.Call, cleanUpManagedDataSkip);
+                        }
+                        else
+                        {
+                            ilgen.Emit(OpCodes.Call, cleanUpManagedData);
+                        }
                     }
                     argIdx++;
                 }
@@ -1260,7 +1280,7 @@ namespace Hybridizer.Runtime.CUDAImports
             }
         }
 
-        private void CallNativeMethod(ILGenerator ilgen, FieldInfo runtimeField, BindingFlags bindingFlags, MethodInfo toWrap, MethodInfo marshallerGetter, FieldInfo wrappedObject, List<Type> wrappedParams, MethodBuilder nativeMetod, MethodBuilder nativeMethodStream, MethodBuilder nativeMethodStreamGridSync, MethodBuilder nativeMethodGridSync, LocalBuilder result)
+        private void CallNativeMethod(ILGenerator ilgen, FieldInfo runtimeField, BindingFlags bindingFlags, MethodInfo toWrap, MethodInfo marshallerGetter, FieldInfo wrappedObject, List<Type> wrappedParams, ParameterInfo[] parameters, MethodBuilder nativeMetod, MethodBuilder nativeMethodStream, MethodBuilder nativeMethodStreamGridSync, MethodBuilder nativeMethodGridSync, LocalBuilder result)
         {
             ilgen.Emit(OpCodes.Ldarg_0);
             ilgen.Emit(OpCodes.Ldfld, runtimeField);
@@ -1278,7 +1298,7 @@ namespace Hybridizer.Runtime.CUDAImports
             ilgen.Emit(OpCodes.Brtrue, streamLabel);
 
             LoadCommonParameters(ilgen, runtimeField, bindingFlags);
-            AddParametersToStack(toWrap, ilgen, runtimeField, marshallerGetter, wrappedObject, wrappedParams);
+            AddParametersToStack(toWrap, ilgen, runtimeField, marshallerGetter, wrappedObject, wrappedParams, parameters);
 
             if (_marshaller is CudaMarshaler)
             {
@@ -1310,7 +1330,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 ilgen.Emit(OpCodes.Ldarg_0);
                 ilgen.Emit(OpCodes.Ldfld, runtimeField);
                 ilgen.Emit(OpCodes.Call, typeof(HybRunner).GetProperty("Stream").GetGetMethod());
-                AddParametersToStack(toWrap, ilgen, runtimeField, marshallerGetter, wrappedObject, wrappedParams);
+                AddParametersToStack(toWrap, ilgen, runtimeField, marshallerGetter, wrappedObject, wrappedParams, parameters);
 
                 ilgen.Emit(OpCodes.Ldarg_0);
                 ilgen.Emit(OpCodes.Ldfld, runtimeField);
@@ -1356,10 +1376,10 @@ namespace Hybridizer.Runtime.CUDAImports
         }
 
         private static void AddParametersToStack(MethodInfo toWrap, ILGenerator generator, FieldInfo runtimeField,
-            MethodInfo marshallerGetter, FieldInfo wrappedObject, List<Type> wrappedParams)
+            MethodInfo marshallerGetter, FieldInfo wrappedObject, List<Type> wrappedParams, ParameterInfo[] parameters)
         {
             int argIdx = 0;
-            // marshal this
+            // marshal this — always normal (no In/Out on self)
             if (!toWrap.IsStatic)
             {
                 generator.Emit(OpCodes.Ldarg_0);
@@ -1371,8 +1391,11 @@ namespace Hybridizer.Runtime.CUDAImports
             }
             argIdx++;
 
-            foreach (Type parameterType in wrappedParams)
+            for (int i = 0; i < wrappedParams.Count; i++)
             {
+                Type parameterType = wrappedParams[i];
+                bool isOutOnly = parameters[i].IsOut && !parameters[i].IsIn;
+
                 if (IsDelegateType(parameterType))
                 {
                     // Convert to HandleDelegate
@@ -1390,7 +1413,15 @@ namespace Hybridizer.Runtime.CUDAImports
                     generator.Emit(OpCodes.Ldfld, runtimeField);
                     generator.Emit(OpCodes.Call, marshallerGetter);
                     generator.Emit(OpCodes.Ldarg, argIdx++);
-                    generator.Emit(OpCodes.Call, marshalManagedToNative);
+                    if (isOutOnly)
+                    {
+                        generator.Emit(OpCodes.Ldc_I4_1); // skipMemcpy = true
+                        generator.Emit(OpCodes.Call, marshalManagedToNativeSkip);
+                    }
+                    else
+                    {
+                        generator.Emit(OpCodes.Call, marshalManagedToNative);
+                    }
                 }
                 else
                 {

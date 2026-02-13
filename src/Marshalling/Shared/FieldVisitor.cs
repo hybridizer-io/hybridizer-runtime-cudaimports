@@ -19,17 +19,17 @@ namespace Hybridizer.Runtime.CUDAImports
 {
     abstract class FieldVisitor
     {
-        internal void VisitFields(object param, TypeInfo typeInfo, Dictionary<FieldInfo, byte[]> overrides)
+        internal void VisitFields(object param, TypeInfo typeInfo, Dictionary<FieldInfo, byte[]> overrides, bool skipMemcpy = false)
         {
             foreach (FieldTools.FieldDeclaration key in typeInfo.fields)
             {
-                HandleField(typeInfo, key, param, overrides);
+                HandleField(typeInfo, key, param, overrides, skipMemcpy);
             }
 
             HandleEndOfObject(param);
         }
 
-        void HandleField(TypeInfo typeInfo, FieldTools.FieldDeclaration key, object param, Dictionary<FieldInfo, byte[]> overrides)
+        void HandleField(TypeInfo typeInfo, FieldTools.FieldDeclaration key, object param, Dictionary<FieldInfo, byte[]> overrides, bool skipMemcpy = false)
         {
             bool hasOverride = overrides.Count > 0;
             if (typeInfo.type.IsGenericType && typeInfo.type.GetGenericTypeDefinition() == typeof(Nullable<>))
@@ -70,7 +70,7 @@ namespace Hybridizer.Runtime.CUDAImports
                             ++fdindex;
                         }
 
-                        HandleField(typeInfo, key.UnionSubFields[maxindex], param, overrides);
+                        HandleField(typeInfo, key.UnionSubFields[maxindex], param, overrides, skipMemcpy);
                     }
                     else if (hasOverride && overrides.ContainsKey(key.Info))
                     {
@@ -100,9 +100,9 @@ namespace Hybridizer.Runtime.CUDAImports
                         if (!key.FieldType.IsArray && !key.FieldType.IsClass && !key.FieldType.IsInterface)
                             throw new NotImplementedException();
                         if (typeof(Delegate).IsAssignableFrom(key.FieldType))
-                            HandleDelegate(key, param, IntPtr.Zero);
+                            HandleDelegate(key, param, IntPtr.Zero, skipMemcpy);
                         else
-                            HandleObject(key, param, IntPtr.Zero);
+                            HandleObject(key, param, IntPtr.Zero, skipMemcpy);
                     }
                     break;
             }
@@ -126,13 +126,13 @@ namespace Hybridizer.Runtime.CUDAImports
         protected abstract void HandlePaddingByte(long count);
         protected abstract void HandleOverride(byte[] data);
         protected abstract void HandlePrimitive(FieldTools.FieldDeclaration key, object o);
-        protected abstract void HandleObject(FieldTools.FieldDeclaration key, object param, IntPtr p);
-        protected abstract void HandleDelegate(FieldTools.FieldDeclaration key, object param, IntPtr p);
+        protected abstract void HandleObject(FieldTools.FieldDeclaration key, object param, IntPtr p, bool skipMemcpy = false);
+        protected abstract void HandleDelegate(FieldTools.FieldDeclaration key, object param, IntPtr p, bool skipMemcpy = false);
         protected abstract void HandlePtr(FieldTools.FieldDeclaration key, object param, IntPtr o, bool isResidentArray = false);
         protected abstract void HandleValueType(FieldTools.FieldDeclaration key, object o, Dictionary<FieldInfo, byte[]> overrides);
         protected abstract void HandleEndOfObject(object param);
         internal abstract IntPtr AllocateObject(object param);
-        internal abstract void CopyObject(object param, IntPtr dev);
-        internal abstract void start(object param, Type type, IntPtr da);
+        internal abstract void CopyObject(object param, IntPtr dev, bool skipMemcpy = false);
+        internal abstract void start(object param, Type type, IntPtr da, bool skipMemcpy = false);
     }
 }

@@ -24,7 +24,7 @@ namespace Hybridizer.Runtime.CUDAImports
                 this.state = state;
             }
 
-            internal override void start(object param, Type type, IntPtr da)
+            internal override void start(object param, Type type, IntPtr da, bool skipMemcpy = false)
             {
                 uint size = (uint)FieldTools.SizeOf(type);
                 long expected = serState.nativePtrConverter.Convert(type).ToInt64();
