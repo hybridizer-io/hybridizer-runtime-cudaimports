@@ -26,6 +26,7 @@ namespace Hybridizer.Runtime.CUDAImports
         NVRTC_ERROR_NO_LOWERED_NAMES_BEFORE_COMPILATION = 9,
         NVRTC_ERROR_NAME_EXPRESSION_NOT_VALID = 10,
         NVRTC_ERROR_INTERNAL_ERROR = 11,
+        NVRTC_ERROR_TIME_FILE_WRITE_FAILED = 12,
 #pragma warning restore 1591
     }
 }
