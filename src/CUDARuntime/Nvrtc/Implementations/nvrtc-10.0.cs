@@ -125,5 +125,10 @@ namespace Hybridizer.Runtime.CUDAImports
         {
             return nvrtcVersion(out major, out minor);
         }
+
+        public nvrtcResult GetCUBIN(nvrtcProgram prog, out byte[] cubin)
+        {
+            throw new NotSupportedException("GetCUBIN is not available in CUDA 10.0 (requires CUDA 11.1+)");
+        }
     }
 }
