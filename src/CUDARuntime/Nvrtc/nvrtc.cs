@@ -37,10 +37,10 @@ namespace Hybridizer.Runtime.CUDAImports
             switch(cudaVersion)
             {
                 case "131":
-                    instance = new nvrtc131();
+                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? (INvrtc)new nvrtc131_linux() : new nvrtc131_windows();
                     break;
                 case "130":
-                    instance = new nvrtc130();
+                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? (INvrtc)new nvrtc130_linux() : new nvrtc130_windows();
                     break;
                 case "101":
                     instance = new nvrtc101();
