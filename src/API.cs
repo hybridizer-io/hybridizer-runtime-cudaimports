@@ -641,6 +641,60 @@ namespace Hybridizer.Runtime.CUDAImports
         }
     }
 
+    /// <summary>
+    /// Override the C++ identifier emitted for a transpiled class or struct,
+    /// while leaving the C# type name unchanged. Useful when two C# types
+    /// share the same name + namespace (e.g. a non-generic class and a
+    /// generic class with the same name), since C++ does not allow that.
+    /// </summary>
+    /// <remarks>
+    /// Unlike <see cref="IntrinsicTypeAttribute"/>, the transpiler still
+    /// generates the type's C++ definition; only the emitted identifier
+    /// differs. The user is responsible for ensuring the alternate name
+    /// does not collide with another generated symbol — a clash is
+    /// surfaced as a C++ compiler error, not a Hybridizer error.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// class Foo { ... }
+    ///
+    /// [AlternateName("TemplatisedFoo")]
+    /// class Foo&lt;T&gt; : Foo { ... }
+    /// </code>
+    /// emits <c>struct Foo</c> and <c>template&lt;typename T&gt; struct TemplatisedFoo : public Foo</c>.
+    /// </example>
+    [Guid("7C4A2D8E-1F3B-4965-A8C7-3E1D5B9F8A42")]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
+    public class AlternateNameAttribute : IntrinsicAttribute
+    {
+        /// <summary>
+        /// is function ? -- always false
+        /// </summary>
+        public override bool IsFunction { get { return false; } set { } }
+
+        /// <summary>
+        /// default constructor
+        /// </summary>
+        public AlternateNameAttribute() { }
+
+        /// <summary>
+        /// constructor for name
+        /// </summary>
+        /// <param name="name">C++ identifier to emit for the decorated type</param>
+        public AlternateNameAttribute(string name) : base(name) { }
+
+        /// <summary>
+        /// flavor-scoped constructor
+        /// </summary>
+        /// <param name="name">C++ identifier to emit for the decorated type</param>
+        /// <param name="flavor">flavor (rename only applies to this flavor)</param>
+        public AlternateNameAttribute(string name, int flavor)
+            : base(name)
+        {
+            Flavor = flavor;
+        }
+    }
+
 #pragma warning disable 1591
     /// <summary>
     /// Types that can be newed on the device using hybridizer::allocate&lt;T&gt;()
