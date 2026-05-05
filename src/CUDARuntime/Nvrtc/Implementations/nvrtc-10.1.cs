@@ -88,8 +88,14 @@ namespace Hybridizer.Runtime.CUDAImports
             if (res != nvrtcResult.NVRTC_SUCCESS) return res;
             byte[] data = new byte[logsize];
             GCHandle gch = GCHandle.Alloc(data, GCHandleType.Pinned);
-            res = nvrtcGetProgramLog(prog, Marshal.UnsafeAddrOfPinnedArrayElement(data, 0));
-            gch.Free();
+            try
+            {
+                res = nvrtcGetProgramLog(prog, Marshal.UnsafeAddrOfPinnedArrayElement(data, 0));
+            }
+            finally
+            {
+                gch.Free();
+            }
             log = ASCIIEncoding.ASCII.GetString(data);
             return res;
         }
@@ -112,8 +118,14 @@ namespace Hybridizer.Runtime.CUDAImports
             if (res != nvrtcResult.NVRTC_SUCCESS) return res;
             byte[] data = new byte[logsize];
             GCHandle gch = GCHandle.Alloc(data, GCHandleType.Pinned);
-            res = nvrtcGetPTX(prog, Marshal.UnsafeAddrOfPinnedArrayElement(data, 0));
-            gch.Free();
+            try
+            {
+                res = nvrtcGetPTX(prog, Marshal.UnsafeAddrOfPinnedArrayElement(data, 0));
+            }
+            finally
+            {
+                gch.Free();
+            }
             ptx = ASCIIEncoding.ASCII.GetString(data);
             return res;
         }

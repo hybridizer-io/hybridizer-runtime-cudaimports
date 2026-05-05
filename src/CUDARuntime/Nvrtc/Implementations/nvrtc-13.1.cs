@@ -10,7 +10,7 @@ namespace Hybridizer.Runtime.CUDAImports
 {
     internal class nvrtc131_linux : INvrtc
     {
-        const string DLL_NAME = "/usr/local/cuda-13.1/lib64/libnvrtc.so";
+        const string DLL_NAME = "libnvrtc.so.13";
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern nvrtcResult nvrtcCreateProgram(out nvrtcProgram prog,
@@ -72,8 +72,14 @@ namespace Hybridizer.Runtime.CUDAImports
             if (res != nvrtcResult.NVRTC_SUCCESS) return res;
             byte[] data = new byte[logsize];
             GCHandle gch = GCHandle.Alloc(data, GCHandleType.Pinned);
-            res = nvrtcGetProgramLog(prog, Marshal.UnsafeAddrOfPinnedArrayElement(data, 0));
-            gch.Free();
+            try
+            {
+                res = nvrtcGetProgramLog(prog, Marshal.UnsafeAddrOfPinnedArrayElement(data, 0));
+            }
+            finally
+            {
+                gch.Free();
+            }
             log = ASCIIEncoding.ASCII.GetString(data);
             return res;
         }
@@ -96,8 +102,14 @@ namespace Hybridizer.Runtime.CUDAImports
             if (res != nvrtcResult.NVRTC_SUCCESS) return res;
             byte[] data = new byte[logsize];
             GCHandle gch = GCHandle.Alloc(data, GCHandleType.Pinned);
-            res = nvrtcGetPTX(prog, Marshal.UnsafeAddrOfPinnedArrayElement(data, 0));
-            gch.Free();
+            try
+            {
+                res = nvrtcGetPTX(prog, Marshal.UnsafeAddrOfPinnedArrayElement(data, 0));
+            }
+            finally
+            {
+                gch.Free();
+            }
             ptx = ASCIIEncoding.ASCII.GetString(data);
             return res;
         }
@@ -128,8 +140,14 @@ namespace Hybridizer.Runtime.CUDAImports
             if (res != nvrtcResult.NVRTC_SUCCESS) return res;
             cubin = new byte[cubinSize];
             GCHandle gch = GCHandle.Alloc(cubin, GCHandleType.Pinned);
-            res = nvrtcGetCUBIN(prog, Marshal.UnsafeAddrOfPinnedArrayElement(cubin, 0));
-            gch.Free();
+            try
+            {
+                res = nvrtcGetCUBIN(prog, Marshal.UnsafeAddrOfPinnedArrayElement(cubin, 0));
+            }
+            finally
+            {
+                gch.Free();
+            }
             return res;
         }
     }
@@ -198,8 +216,14 @@ namespace Hybridizer.Runtime.CUDAImports
             if (res != nvrtcResult.NVRTC_SUCCESS) return res;
             byte[] data = new byte[logsize];
             GCHandle gch = GCHandle.Alloc(data, GCHandleType.Pinned);
-            res = nvrtcGetProgramLog(prog, Marshal.UnsafeAddrOfPinnedArrayElement(data, 0));
-            gch.Free();
+            try
+            {
+                res = nvrtcGetProgramLog(prog, Marshal.UnsafeAddrOfPinnedArrayElement(data, 0));
+            }
+            finally
+            {
+                gch.Free();
+            }
             log = ASCIIEncoding.ASCII.GetString(data);
             return res;
         }
@@ -222,8 +246,14 @@ namespace Hybridizer.Runtime.CUDAImports
             if (res != nvrtcResult.NVRTC_SUCCESS) return res;
             byte[] data = new byte[logsize];
             GCHandle gch = GCHandle.Alloc(data, GCHandleType.Pinned);
-            res = nvrtcGetPTX(prog, Marshal.UnsafeAddrOfPinnedArrayElement(data, 0));
-            gch.Free();
+            try
+            {
+                res = nvrtcGetPTX(prog, Marshal.UnsafeAddrOfPinnedArrayElement(data, 0));
+            }
+            finally
+            {
+                gch.Free();
+            }
             ptx = ASCIIEncoding.ASCII.GetString(data);
             return res;
         }
@@ -254,8 +284,14 @@ namespace Hybridizer.Runtime.CUDAImports
             if (res != nvrtcResult.NVRTC_SUCCESS) return res;
             cubin = new byte[cubinSize];
             GCHandle gch = GCHandle.Alloc(cubin, GCHandleType.Pinned);
-            res = nvrtcGetCUBIN(prog, Marshal.UnsafeAddrOfPinnedArrayElement(cubin, 0));
-            gch.Free();
+            try
+            {
+                res = nvrtcGetCUBIN(prog, Marshal.UnsafeAddrOfPinnedArrayElement(cubin, 0));
+            }
+            finally
+            {
+                gch.Free();
+            }
             return res;
         }
     }

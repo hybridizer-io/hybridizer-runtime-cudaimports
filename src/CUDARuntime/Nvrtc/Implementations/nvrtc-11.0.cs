@@ -8,9 +8,9 @@ using System.Text;
 
 namespace Hybridizer.Runtime.CUDAImports
 {
-    internal class nvrtc130_linux : INvrtc
+    internal class nvrtc110_linux : INvrtc
     {
-        const string DLL_NAME = "libnvrtc.so.13";
+        const string DLL_NAME = "libnvrtc.so.11.2";
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern nvrtcResult nvrtcCreateProgram(out nvrtcProgram prog,
@@ -152,9 +152,9 @@ namespace Hybridizer.Runtime.CUDAImports
         }
     }
 
-    internal class nvrtc130_windows : INvrtc
+    internal class nvrtc110_windows : INvrtc
     {
-        const string DLL_NAME = "nvrtc64_130_0.dll";
+        const string DLL_NAME = "nvrtc64_110_0.dll";
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern nvrtcResult nvrtcCreateProgram(out nvrtcProgram prog,

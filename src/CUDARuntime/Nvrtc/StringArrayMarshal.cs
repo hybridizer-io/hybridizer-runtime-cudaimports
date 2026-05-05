@@ -32,27 +32,35 @@ namespace Hybridizer.Runtime.CUDAImports
         /// <param name="data"></param>
         public StringArrayMarshal(string[] data)
         {
-            if (data == null)
+            // Treat null and zero-length identically: native callers expect a
+            // null pointer when there are no entries.
+            if (data == null || data.Length == 0)
             {
                 ar = null;
                 charArrays = null;
                 handles = null;
+                return;
             }
-            else
+
+            charArrays = new byte[data.Length][];
+            handles = new GCHandle[data.Length];
+            ar = new IntPtr[data.Length];
+            for (int k = 0; k < data.Length; ++k)
             {
-                charArrays = new byte[data.Length][];
-                handles = new GCHandle[data.Length];
-                ar = new IntPtr[data.Length];
-                for (int k = 0; k < data.Length; ++k)
+                if (data[k] == null)
                 {
-                    var bytes = ASCIIEncoding.ASCII.GetBytes(data[k]).ToList();
-                    bytes.Add(0);
-                    charArrays[k] = bytes.ToArray();
-                    handles[k] = GCHandle.Alloc(charArrays[k], GCHandleType.Pinned);
-                    ar[k] = Marshal.UnsafeAddrOfPinnedArrayElement(charArrays[k], 0);
+                    // Null entries map to a null slot in the IntPtr array.
+                    charArrays[k] = null;
+                    ar[k] = IntPtr.Zero;
+                    continue;
                 }
-                arHandle = GCHandle.Alloc(ar, GCHandleType.Pinned);
+                var bytes = ASCIIEncoding.ASCII.GetBytes(data[k]).ToList();
+                bytes.Add(0);
+                charArrays[k] = bytes.ToArray();
+                handles[k] = GCHandle.Alloc(charArrays[k], GCHandleType.Pinned);
+                ar[k] = Marshal.UnsafeAddrOfPinnedArrayElement(charArrays[k], 0);
             }
+            arHandle = GCHandle.Alloc(ar, GCHandleType.Pinned);
         }
 
         #region IDisposable Support
@@ -69,9 +77,12 @@ namespace Hybridizer.Runtime.CUDAImports
             {
                 if (ar != null)
                 {
-                    arHandle.Free();
-                    foreach (GCHandle handle in handles)
-                        handle.Free();
+                    if (arHandle.IsAllocated) arHandle.Free();
+                    if (handles != null)
+                    {
+                        foreach (GCHandle handle in handles)
+                            if (handle.IsAllocated) handle.Free();
+                    }
                 }
                 ar = null;
                 charArrays = null;

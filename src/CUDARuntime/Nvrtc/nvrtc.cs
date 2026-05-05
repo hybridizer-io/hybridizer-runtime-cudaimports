@@ -19,41 +19,43 @@ namespace Hybridizer.Runtime.CUDAImports
         /// <returns></returns>
         public static string GetCudaVersion()
         {
-            // If not, get the version configured in app.config
-            string cudaVersion = cuda.GetCudaVersion();
-
-            // Otherwise default to latest version
-            if (cudaVersion == null) cudaVersion = "80";
-            cudaVersion = cudaVersion.Replace(".", ""); // Remove all dots ("7.5" will be understood "75")
-
-            return cudaVersion;
+            // cuda.GetCudaVersion() always returns a non-null, dot-stripped version
+            // string (defaulting to the latest supported CUDA), so we just relay it.
+            return cuda.GetCudaVersion();
         }
 
         static INvrtc instance;
 
         static nvrtc()
         {
-            string cudaVersion = GetCudaVersion();
+            instance = SelectInstance(GetCudaVersion());
+        }
+
+        /// <summary>
+        /// Re-select the nvrtc backend based on the current cuda version.
+        /// Called by <see cref="cuda.SetCudaVersion"/> so that swapping the
+        /// runtime version after type-init also swaps nvrtc.
+        /// </summary>
+        internal static void Reinitialize()
+        {
+            instance = SelectInstance(GetCudaVersion());
+        }
+
+        internal static INvrtc SelectInstance(string cudaVersion)
+        {
+            bool linux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
             switch(cudaVersion)
             {
-                case "131":
-                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? (INvrtc)new nvrtc131_linux() : new nvrtc131_windows();
-                    break;
-                case "130":
-                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? (INvrtc)new nvrtc130_linux() : new nvrtc130_windows();
-                    break;
-                case "101":
-                    instance = new nvrtc101();
-                    break;
-                case "100":
-                    instance = new nvrtc10();
-                    break;
-                case "110":
-                case "114":
-                case "120":
-                case "124":
-                case "126":
-                    throw new NotImplementedException(string.Format("nvrtc is not yet mapped for CUDA {0} -- use 13.0+ or 10.x", cudaVersion));
+                case "132": return linux ? (INvrtc)new nvrtc132_linux() : new nvrtc132_windows();
+                case "131": return linux ? (INvrtc)new nvrtc131_linux() : new nvrtc131_windows();
+                case "130": return linux ? (INvrtc)new nvrtc130_linux() : new nvrtc130_windows();
+                case "126": return linux ? (INvrtc)new nvrtc126_linux() : new nvrtc126_windows();
+                case "124": return linux ? (INvrtc)new nvrtc124_linux() : new nvrtc124_windows();
+                case "120": return linux ? (INvrtc)new nvrtc120_linux() : new nvrtc120_windows();
+                case "114": return linux ? (INvrtc)new nvrtc114_linux() : new nvrtc114_windows();
+                case "110": return linux ? (INvrtc)new nvrtc110_linux() : new nvrtc110_windows();
+                case "101": return new nvrtc101();
+                case "100": return new nvrtc10();
                 default:
                     throw new NotImplementedException(string.Format("nvrtc is not mapped for CUDA version {0}", cudaVersion));
             }
