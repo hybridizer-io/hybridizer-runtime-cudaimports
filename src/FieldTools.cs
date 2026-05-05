@@ -667,13 +667,20 @@ namespace Hybridizer.Runtime.CUDAImports
             catch { return false; }
         }
 
+        // Intentional duplicate of Transcoder.Disassembly.TypeExtensions
+        // .getCustomAttribute_cache. FieldTools ships as part of the CUDA
+        // runtime library (end-user dependency) and must remain standalone,
+        // so it cannot reference the transcoder-side cache. Both caches
+        // coexist in-process when FieldTools.cs is <Link>-included into
+        // Hybridizer.Application. Consolidation would require extracting
+        // to a shared Common module — deferred.
         private static Dictionary<MemberInfo, Attribute> getCustomAttribute_cache = new Dictionary<MemberInfo, Attribute>();
 
         private static T GetCustomAttribute<T>(MemberInfo mi) where T : Attribute
         {
-            if (getCustomAttribute_cache.ContainsKey(mi))
+            if (getCustomAttribute_cache.TryGetValue(mi, out Attribute cached))
             {
-                return (T) getCustomAttribute_cache[mi];
+                return (T) cached;
             }
 
             var catts = mi.GetCustomAttributesData();
