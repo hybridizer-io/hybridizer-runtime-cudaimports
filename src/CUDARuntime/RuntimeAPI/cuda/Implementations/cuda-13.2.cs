@@ -14,11 +14,133 @@ namespace Hybridizer.Runtime.CUDAImports
     /// </summary>
     internal unsafe partial class CudaImplem
     {
-        internal class Cuda_64_124_linux : ICuda
+		[StructLayout(LayoutKind.Sequential, Pack = 8)]
+		public struct cudaDeviceProp_132
+		{
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
+			public char[] name;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+			public char[] uuid;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+			public char[] luid;
+			public uint luidDeviceNodeMask;
+			public size_t totalGlobalMem;
+			public size_t sharedMemPerBlock;
+			public int regsPerBlock;
+			public int warpSize;
+			public size_t memPitch;
+			public int maxThreadsPerBlock;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+			public int[] maxThreadsDim;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+			public int[] maxGridSize;
+			public size_t totalConstMem;
+			public int major;
+			public int minor;
+			public size_t textureAlignment;
+			public size_t texturePitchAlignment;
+			public int multiProcessorCount;
+			public int integrated;
+			public int canMapHostMemory;
+			public int maxTexture1D;
+			public int maxTexture1DMipmap;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
+			public int[] maxTexture2D;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
+			public int[] maxTexture2DMipmap;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+			public int[] maxTexture2DLinear;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
+			public int[] maxTexture2DGather;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+			public int[] maxTexture3D;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+			public int[] maxTexture3DAlt;
+			public int maxTextureCubemap;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
+			public int[] maxTexture1DLayered;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+			public int[] maxTexture2DLayered;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
+			public int[] maxTextureCubemapLayered;
+			public int maxSurface1D;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
+			public int[] maxSurface2D;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+			public int[] maxSurface3D;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
+			public int[] maxSurface1DLayered;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+			public int[] maxSurface2DLayered;
+			public int maxSurfaceCubemap;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
+			public int[] maxSurfaceCubemapLayered;
+			public size_t surfaceAlignment;
+			public int concurrentKernels;
+			public int ECCEnabled;
+			public int pciBusID;
+			public int pciDeviceID;
+			public int pciDomainID;
+			public int tccDriver;
+			public int asyncEngineCount;
+			public int unifiedAddressing;
+			public int memoryBusWidth;
+			public int l2CacheSize;
+            public int persistingL2CacheMaxSize;
+            public int maxThreadsPerMultiProcessor;
+			public int streamPrioritiesSupported;
+			public int globalL1CacheSupported;
+			public int localL1CacheSupported;
+			public size_t sharedMemPerMultiprocessor;
+			public int regsPerMultiprocessor;
+			public int managedMemory;
+			public int isMultiGpuBoard;
+			public int multiGpuBoardGroupID;
+			public int hostNativeAtomicSupported;
+			public int singleToDoublePrecisionPerfRatio;
+			public int pageableMemoryAccess;
+			public int concurrentManagedAccess;
+			public int computePreemptionSupported;
+			public int canUseHostPointerForRegisteredMem;
+			public int cooperativeLaunch;
+			public size_t sharedMemPerBlockOptin;
+			public int pageableMemoryAccessUsesHostPageTables;
+			public int directManagedMemAccessFromHost;
+            public int maxBlocksPerMultiProcessor; 
+            public int accessPolicyMaxWindowSize;  
+            public size_t reservedSharedMemPerBlock;
+            public int hostRegisterSupported; 
+            public int sparseCudaArraySupported; 
+            public int hostRegisterReadOnlySupported;
+            public int timelineSemaphoreInteropSupported; 
+            public int memoryPoolsSupported;    
+            public int gpuDirectRDMASupported;   
+            public uint gpuDirectRDMAFlushWritesOptions;
+            public int gpuDirectRDMAWritesOrdering;
+            public int memoryPoolSupportedHandleTypes;
+            public int deferredMappingCudaArraySupported;
+            public int ipcEventSupported;       
+            public int clusterLaunch;
+            public int unifiedFunctionPointers;
+            
+            public int deviceNumaConfig;           /**< NUMA configuration of a device: value is of type ::cudaDeviceNumaConfig enum */
+            public int deviceNumaId;               /**< NUMA node ID of the GPU memory */
+            public int mpsEnabled;                 /**< Indicates if contexts created on this device will be shared via MPS */
+            public int hostNumaId;                 /**< NUMA ID of the host node closest to the device or -1 when system does not support NUMA */
+            public uint gpuPciDeviceID; /**< The combined 16-bit PCI device ID and 16-bit PCI vendor ID */
+            public int gpuPciSubsystemID; /**< The combined 16-bit PCI subsystem ID and 16-bit PCI subsystem vendor ID */
+            public int hostNumaMultinodeIpcSupported; /**< 1 if the device supports HostNuma location IPC between nodes in a multi-node system. */
+            
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 56)]
+            public int[] reserved;              
+        }
+
+        internal class Cuda_64_132_linux : ICuda
         {
-            internal const string CUDARTDLL = "libcudart.so.12";
+            internal const string CUDARTDLL = "libcudart.so.13";
 
             #region Device Management
+
             [DllImport(CUDARTDLL, CharSet = CharSet.Ansi, EntryPoint = "cudaDeviceReset")]
             public static extern cudaError_t cudaDeviceReset();
             public cudaError_t DeviceReset() { return cudaDeviceReset(); }
@@ -36,10 +158,10 @@ namespace Hybridizer.Runtime.CUDAImports
             public cudaError_t GetDeviceCount(out int devCount) { return cudaGetDeviceCount(out devCount); }
 
             [DllImport(CUDARTDLL, CharSet = CharSet.Ansi, EntryPoint = "cudaGetDeviceProperties")]
-            public static extern cudaError_t cudaGetDeviceProperties(out cudaDeviceProp_120 props, int device);
+            public static extern cudaError_t cudaGetDeviceProperties(out cudaDeviceProp_132 props, int device);
             public cudaError_t GetDeviceProperties(out cudaDeviceProp props, int device)
             {
-                cudaDeviceProp_120 res;
+                cudaDeviceProp_132 res;
                 cudaError_t er = cudaGetDeviceProperties(out res, device);
                 props = cuda.StructConvert<cudaDeviceProp>(res);
                 return er;
@@ -67,11 +189,11 @@ namespace Hybridizer.Runtime.CUDAImports
             }
 
             [DllImport(CUDARTDLL, CharSet = CharSet.Ansi, EntryPoint = "cudaChooseDevice")]
-            public static extern cudaError_t cudaChooseDevice(out int device, ref cudaDeviceProp_120 prop);
+            public static extern cudaError_t cudaChooseDevice(out int device, ref cudaDeviceProp_132 prop);
             public cudaError_t ChooseDevice(out int device, ref cudaDeviceProp prop)
             {
-                cudaDeviceProp_120 res;
-                res = cuda.StructConvert<cudaDeviceProp_120>(prop);
+                cudaDeviceProp_132 res;
+                res = cuda.StructConvert<cudaDeviceProp_132>(prop);
                 return cudaChooseDevice(out device, ref res);
             }
 
@@ -653,11 +775,12 @@ namespace Hybridizer.Runtime.CUDAImports
         }
     
     
-        internal class Cuda_64_124_windows : ICuda
+        internal class Cuda_64_132_windows : ICuda
         {
-            internal const string CUDARTDLL = "cudart64_12.dll";
+            internal const string CUDARTDLL = "cudart64_13.dll";
 
             #region Device Management
+
             [DllImport(CUDARTDLL, CharSet = CharSet.Ansi, EntryPoint = "cudaDeviceReset")]
             public static extern cudaError_t cudaDeviceReset();
             public cudaError_t DeviceReset() { return cudaDeviceReset(); }
@@ -675,10 +798,10 @@ namespace Hybridizer.Runtime.CUDAImports
             public cudaError_t GetDeviceCount(out int devCount) { return cudaGetDeviceCount(out devCount); }
 
             [DllImport(CUDARTDLL, CharSet = CharSet.Ansi, EntryPoint = "cudaGetDeviceProperties")]
-            public static extern cudaError_t cudaGetDeviceProperties(out cudaDeviceProp_120 props, int device);
+            public static extern cudaError_t cudaGetDeviceProperties(out cudaDeviceProp_132 props, int device);
             public cudaError_t GetDeviceProperties(out cudaDeviceProp props, int device)
             {
-                cudaDeviceProp_120 res;
+                cudaDeviceProp_132 res;
                 cudaError_t er = cudaGetDeviceProperties(out res, device);
                 props = cuda.StructConvert<cudaDeviceProp>(res);
                 return er;
@@ -706,11 +829,11 @@ namespace Hybridizer.Runtime.CUDAImports
             }
 
             [DllImport(CUDARTDLL, CharSet = CharSet.Ansi, EntryPoint = "cudaChooseDevice")]
-            public static extern cudaError_t cudaChooseDevice(out int device, ref cudaDeviceProp_120 prop);
+            public static extern cudaError_t cudaChooseDevice(out int device, ref cudaDeviceProp_132 prop);
             public cudaError_t ChooseDevice(out int device, ref cudaDeviceProp prop)
             {
-                cudaDeviceProp_120 res;
-                res = cuda.StructConvert<cudaDeviceProp_120>(prop);
+                cudaDeviceProp_132 res;
+                res = cuda.StructConvert<cudaDeviceProp_132>(prop);
                 return cudaChooseDevice(out device, ref res);
             }
 

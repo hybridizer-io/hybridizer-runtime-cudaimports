@@ -63,17 +63,6 @@ namespace Hybridizer.Runtime.CUDAImports
         /// </summary>
         public static VERBOSITY s_VERBOSITY = VERBOSITY.None;
 
-        private static readonly Dictionary<string, string[]> CUDA_DLLS = new Dictionary<string, string[]>
-        {
-            { "110", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_110_linux.CUDARTDLL : Cuda_64_110_windows.CUDARTDLL } },
-            { "114", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_114_linux.CUDARTDLL : Cuda_64_114_windows.CUDARTDLL } },
-            { "120", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_120_linux.CUDARTDLL : Cuda_64_120_windows.CUDARTDLL } },
-            { "124", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_124_linux.CUDARTDLL : Cuda_64_124_windows.CUDARTDLL } },
-            { "126", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_126_linux.CUDARTDLL : Cuda_64_126_windows.CUDARTDLL } },
-            { "130", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_130_linux.CUDARTDLL : Cuda_64_130_windows.CUDARTDLL } },
-            { "131", new[] { RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Cuda_64_131_linux.CUDARTDLL : Cuda_64_131_windows.CUDARTDLL } }
-        };
-
         /// <summary>
         /// current instance
         /// </summary>
@@ -85,6 +74,7 @@ namespace Hybridizer.Runtime.CUDAImports
         {
             switch(value)
             {
+                case "13.2":
                 case "13.1":
                 case "13.0":
                 case "12.6":
@@ -92,9 +82,34 @@ namespace Hybridizer.Runtime.CUDAImports
                 case "11.4":
                 case "11.0":
                     _cudaversion = value;
+                    // Rebind both the cuda runtime instance and the nvrtc backend
+                    // so subsequent calls hit the requested CUDA version, even if
+                    // the type initializer already ran with a different default.
+                    instance = SelectInstance(GetCudaVersion());
+                    nvrtc.Reinitialize();
                     break;
                 default:
                     throw new ApplicationException($"Unsupported cuda version {value}");
+            }
+        }
+
+        internal static ICuda SelectInstance(string cudaVersion)
+        {
+            if (IntPtr.Size != 8)
+                throw new NotSupportedException("cuda dropped 32 bits support since version 11");
+            bool linux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+            switch (cudaVersion)
+            {
+                case "110": return linux ? (ICuda)new Cuda_64_110_linux() : new Cuda_64_110_windows();
+                case "114": return linux ? (ICuda)new Cuda_64_114_linux() : new Cuda_64_114_windows();
+                case "120": return linux ? (ICuda)new Cuda_64_120_linux() : new Cuda_64_120_windows();
+                case "124": return linux ? (ICuda)new Cuda_64_124_linux() : new Cuda_64_124_windows();
+                case "126": return linux ? (ICuda)new Cuda_64_126_linux() : new Cuda_64_126_windows();
+                case "130": return linux ? (ICuda)new Cuda_64_130_linux() : new Cuda_64_130_windows();
+                case "131": return linux ? (ICuda)new Cuda_64_131_linux() : new Cuda_64_131_windows();
+                case "132": return linux ? (ICuda)new Cuda_64_132_linux() : new Cuda_64_132_windows();
+                default:
+                    throw new ApplicationException(string.Format("Unsupported version of Cuda {0}", cudaVersion));
             }
         }
 
@@ -120,7 +135,9 @@ namespace Hybridizer.Runtime.CUDAImports
             }
             
             string cudaVersion = String.Empty;
-#if HYBRIDIZER_CUDA_VERSION_131
+#if HYBRIDIZER_CUDA_VERSION_132
+            cudaVersion = "132";
+#elif HYBRIDIZER_CUDA_VERSION_131
             cudaVersion = "131";
 #elif HYBRIDIZER_CUDA_VERSION_130
             cudaVersion = "130";
@@ -183,37 +200,7 @@ namespace Hybridizer.Runtime.CUDAImports
 
         static cuda()
         {
-            // read verbosity from file
-            string cudaVersion = GetCudaVersion();
-            
-            if (IntPtr.Size != 8)
-                throw new NotSupportedException("cuda dropped 32 bits support since version 11");
-            switch (cudaVersion)
-            {
-                case "110":
-                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? new Cuda_64_110_linux() : new Cuda_64_110_windows();
-                    break;
-                case "114":
-                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? new Cuda_64_114_linux() : new Cuda_64_114_windows();
-                    break;
-                case "120":
-                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? new Cuda_64_120_linux() : new Cuda_64_120_windows();
-                    break;
-                case "124":
-                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? new Cuda_64_124_linux() : new Cuda_64_124_windows();
-                    break;
-                case "126":
-                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? new Cuda_64_126_linux() : new Cuda_64_126_windows();
-                    break;
-                case "130":
-                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? new Cuda_64_130_linux() : new Cuda_64_130_windows();
-                    break;
-                case "131":
-                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? new Cuda_64_131_linux() : new Cuda_64_131_windows();
-                    break;
-                default:
-                    throw new ApplicationException(string.Format("Unsupported version of Cuda {0}", cudaVersion));
-            }
+            instance = SelectInstance(GetCudaVersion());
         }
 
 #region Device Management
