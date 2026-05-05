@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -13,7 +14,71 @@ namespace Hybridizer.Runtime.CUDAImports
     /// </summary>
     public class driver
     {
-        const string dllPath = "nvcuda.dll";
+        // Synthetic library name. The static constructor registers a resolver
+        // (via System.Runtime.InteropServices.NativeLibrary, available at
+        // runtime on .NET 5+) that maps it to the real binary per OS:
+        //  - Windows: "nvcuda.dll"
+        //  - Linux:   "libcuda.so.1"
+        // On older runtimes (where NativeLibrary is unavailable) the default
+        // loader falls back to searching for a file named "nvcuda" or
+        // "libnvcuda.so", and consumers are expected to provide it via PATH /
+        // LD_LIBRARY_PATH.
+        const string dllPath = "nvcuda";
+
+        static driver()
+        {
+            TryRegisterCudaDriverResolver();
+        }
+
+        private static void TryRegisterCudaDriverResolver()
+        {
+            try
+            {
+                var nlType = Type.GetType("System.Runtime.InteropServices.NativeLibrary, System.Runtime.InteropServices")
+                          ?? Type.GetType("System.Runtime.InteropServices.NativeLibrary, System.Private.CoreLib")
+                          ?? Type.GetType("System.Runtime.InteropServices.NativeLibrary");
+                if (nlType == null) return;
+
+                var resolverType = nlType.Assembly.GetType("System.Runtime.InteropServices.DllImportResolver");
+                if (resolverType == null) return;
+
+                var setResolver = nlType.GetMethod(
+                    "SetDllImportResolver",
+                    BindingFlags.Public | BindingFlags.Static,
+                    null,
+                    new[] { typeof(Assembly), resolverType },
+                    null);
+                if (setResolver == null) return;
+
+                var resolveMethod = typeof(driver).GetMethod(
+                    nameof(ResolveCudaDriver),
+                    BindingFlags.NonPublic | BindingFlags.Static);
+                var del = Delegate.CreateDelegate(resolverType, resolveMethod);
+                setResolver.Invoke(null, new object[] { typeof(driver).Assembly, del });
+            }
+            catch
+            {
+                // Older runtime without NativeLibrary; fall back to the default loader.
+            }
+        }
+
+        private static IntPtr ResolveCudaDriver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+        {
+            if (libraryName != dllPath && libraryName != "nvcuda.dll") return IntPtr.Zero;
+            string target = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "libcuda.so.1" : "nvcuda.dll";
+            try
+            {
+                var nlType = Type.GetType("System.Runtime.InteropServices.NativeLibrary, System.Runtime.InteropServices")
+                          ?? Type.GetType("System.Runtime.InteropServices.NativeLibrary, System.Private.CoreLib")
+                          ?? Type.GetType("System.Runtime.InteropServices.NativeLibrary");
+                var load = nlType?.GetMethod("Load", new[] { typeof(string) });
+                return (IntPtr)(load?.Invoke(null, new object[] { target }) ?? IntPtr.Zero);
+            }
+            catch
+            {
+                return IntPtr.Zero;
+            }
+        }
 
         
         [DllImport(dllPath, CharSet = CharSet.Ansi)] static extern CUresult cuCtxGetCurrent(out CUcontext ctx);

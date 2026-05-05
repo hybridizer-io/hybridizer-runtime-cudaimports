@@ -78,15 +78,26 @@ namespace Hybridizer.Runtime.CUDAImports
         }
 
         /// <summary>
-        /// get entry point from name
+        /// get entry point from name (legacy API: discards CUresult)
         /// </summary>
         /// <param name="kernelname"></param>
         /// <returns></returns>
         public CUfunction GetEntryPoint(string kernelname)
         {
-            CUfunction dFuncptrvar;
-            driver.ModuleGetFunction(out dFuncptrvar, _module, kernelname);
-            return dFuncptrvar;
+            TryGetEntryPoint(kernelname, out CUfunction func);
+            return func;
+        }
+
+        /// <summary>
+        /// get entry point from name and return the underlying CUresult so
+        /// callers can react to a missing symbol or unloaded module.
+        /// </summary>
+        /// <param name="kernelname"></param>
+        /// <param name="func">resolved kernel handle, or default if the call failed</param>
+        /// <returns>CUresult from the underlying cuModuleGetFunction call</returns>
+        public CUresult TryGetEntryPoint(string kernelname, out CUfunction func)
+        {
+            return driver.ModuleGetFunction(out func, _module, kernelname);
         }
 
         /// <summary>
@@ -326,11 +337,6 @@ namespace Hybridizer.Runtime.CUDAImports
                 *(ptr + bufferSize) = ((byte)o);
                 bufferSize += ParameterAlignment[t]; // size == alignment
             }
-            else if (t == typeof(byte))
-            {
-                *(ptr + bufferSize) = ((byte)o);
-                bufferSize += ParameterAlignment[t]; // size == alignment
-            }
             else if (t == typeof(bool))
             {
                 *(int*)(ptr + bufferSize) = (bool)o ? 1 : 0;
@@ -436,6 +442,10 @@ namespace Hybridizer.Runtime.CUDAImports
             };
 
             var handle2 = GCHandle.Alloc(extra, GCHandleType.Pinned);
+            // Hybridizer kernels reserve 1024 bytes of dynamic shared memory for the runtime
+            // (the int[256] runtime buffer pinned above is consumed device-side); user-requested
+            // sharedMem is added on top. Do not lower this constant without coordinating with the
+            // generated kernel ABI.
             var result = driver.LaunchKernel(func, gridDim.x, gridDim.y, gridDim.z, blockDim.x, blockDim.y, blockDim.z, 1024 + sharedMem, stream, IntPtr.Zero, Marshal.UnsafeAddrOfPinnedArrayElement(extra,0));
 
             handle2.Free();

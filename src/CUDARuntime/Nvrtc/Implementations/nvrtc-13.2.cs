@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Hybridizer.Runtime.CUDAImports
 {
-    internal class nvrtc130_linux : INvrtc
+    internal class nvrtc132_linux : INvrtc
     {
         const string DLL_NAME = "libnvrtc.so.13";
 
@@ -152,7 +152,7 @@ namespace Hybridizer.Runtime.CUDAImports
         }
     }
 
-    internal class nvrtc130_windows : INvrtc
+    internal class nvrtc132_windows : INvrtc
     {
         const string DLL_NAME = "nvrtc64_130_0.dll";
 

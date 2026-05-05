@@ -75,7 +75,7 @@ namespace Hybridizer.Runtime.CUDAImports
 			public int maxSurfaceCubemap;
 			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
 			public int[] maxSurfaceCubemapLayered;
-			size_t surfaceAlignment;
+			public size_t surfaceAlignment;
 			public int concurrentKernels;
 			public int ECCEnabled;
 			public int pciBusID;
@@ -137,7 +137,7 @@ namespace Hybridizer.Runtime.CUDAImports
 
         internal class Cuda_64_130_linux : ICuda
         {
-            internal const string CUDARTDLL = "/usr/local/cuda-13.0/lib64/libcudart.so";
+            internal const string CUDARTDLL = "libcudart.so.13";
 
             #region Device Management
 
@@ -340,7 +340,7 @@ namespace Hybridizer.Runtime.CUDAImports
             [DllImport(CUDARTDLL, CharSet = CharSet.Ansi, EntryPoint = "cudaStreamWaitEvent")]
             public static extern cudaError_t cudaStreamWaitEvent(cudaStream_t stream, cudaEvent_t evt, uint flags);
 
-            public cudaError_t StreamAddCallback(cudaStream_t stream, cudaStreamCallback_t callback, IntPtr userData, uint flags) { return StreamAddCallback(stream, callback, userData, flags); }
+            public cudaError_t StreamAddCallback(cudaStream_t stream, cudaStreamCallback_t callback, IntPtr userData, uint flags) { return cudaStreamAddCallback(stream, callback, userData, flags); }
             public cudaError_t StreamAttachMemAsync(cudaStream_t stream, IntPtr devPtr, size_t length, uint flags) { return cudaStreamAttachMemAsync(stream, devPtr, length, flags); }
             public cudaError_t StreamCreateWithFlags(out cudaStream_t pStream, uint flags) { return cudaStreamCreateWithFlags(out pStream, flags); }
             public cudaError_t StreamCreateWithPriority(out cudaStream_t pStream, uint flags, int priority) { return cudaStreamCreateWithPriority(out pStream, flags, priority); }
@@ -415,7 +415,7 @@ namespace Hybridizer.Runtime.CUDAImports
 
             #region Occupancy
 
-            [DllImport(CUDARTDLL, CharSet = CharSet.Ansi, EntryPoint = "cudaOccupancyMaxActiveBlocksPerMultiprocessor ")]
+            [DllImport(CUDARTDLL, CharSet = CharSet.Ansi, EntryPoint = "cudaOccupancyMaxActiveBlocksPerMultiprocessor")]
             public static extern cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessor(out int numBlocks, IntPtr function, int blockSize, size_t dynamicSharedSize);
 
             public cudaError_t OccupancyMaxActiveBlocksPerMultiprocessor(out int numBlocks, IntPtr function, int blockSize, size_t dynamicSharedSize)
@@ -558,7 +558,7 @@ namespace Hybridizer.Runtime.CUDAImports
             static extern cudaError_t cudaFreeMipmappedArray(cudaMipmappedArray_t mipmappedArray); // Frees a mipmapped array on the device. 
             public cudaError_t FreeMipmappedArray(cudaMipmappedArray_t mipmappedArray) { return cudaFreeMipmappedArray(mipmappedArray); }
 
-            [DllImport(CUDARTDLL, CharSet = CharSet.Ansi, EntryPoint = "cudaFreeMipmappedArray")]
+            [DllImport(CUDARTDLL, CharSet = CharSet.Ansi, EntryPoint = "cudaGetMipmappedArrayLevel")]
             static extern cudaError_t cudaGetMipmappedArrayLevel(out cudaArray_t levelArray, cudaMipmappedArray_t mipmappedArray, uint level); // Gets a mipmap level of a CUDA mipmapped array. 
             public cudaError_t GetMipmappedArrayLevel(out cudaArray_t levelArray, cudaMipmappedArray_t mipmappedArray, uint level) { return cudaGetMipmappedArrayLevel(out levelArray, mipmappedArray, level); }
 
@@ -980,7 +980,7 @@ namespace Hybridizer.Runtime.CUDAImports
             [DllImport(CUDARTDLL, CharSet = CharSet.Ansi, EntryPoint = "cudaStreamWaitEvent")]
             public static extern cudaError_t cudaStreamWaitEvent(cudaStream_t stream, cudaEvent_t evt, uint flags);
 
-            public cudaError_t StreamAddCallback(cudaStream_t stream, cudaStreamCallback_t callback, IntPtr userData, uint flags) { return StreamAddCallback(stream, callback, userData, flags); }
+            public cudaError_t StreamAddCallback(cudaStream_t stream, cudaStreamCallback_t callback, IntPtr userData, uint flags) { return cudaStreamAddCallback(stream, callback, userData, flags); }
             public cudaError_t StreamAttachMemAsync(cudaStream_t stream, IntPtr devPtr, size_t length, uint flags) { return cudaStreamAttachMemAsync(stream, devPtr, length, flags); }
             public cudaError_t StreamCreateWithFlags(out cudaStream_t pStream, uint flags) { return cudaStreamCreateWithFlags(out pStream, flags); }
             public cudaError_t StreamCreateWithPriority(out cudaStream_t pStream, uint flags, int priority) { return cudaStreamCreateWithPriority(out pStream, flags, priority); }
@@ -1055,7 +1055,7 @@ namespace Hybridizer.Runtime.CUDAImports
 
             #region Occupancy
 
-            [DllImport(CUDARTDLL, CharSet = CharSet.Ansi, EntryPoint = "cudaOccupancyMaxActiveBlocksPerMultiprocessor ")]
+            [DllImport(CUDARTDLL, CharSet = CharSet.Ansi, EntryPoint = "cudaOccupancyMaxActiveBlocksPerMultiprocessor")]
             public static extern cudaError_t cudaOccupancyMaxActiveBlocksPerMultiprocessor(out int numBlocks, IntPtr function, int blockSize, size_t dynamicSharedSize);
 
             public cudaError_t OccupancyMaxActiveBlocksPerMultiprocessor(out int numBlocks, IntPtr function, int blockSize, size_t dynamicSharedSize)
@@ -1198,7 +1198,7 @@ namespace Hybridizer.Runtime.CUDAImports
             static extern cudaError_t cudaFreeMipmappedArray(cudaMipmappedArray_t mipmappedArray); // Frees a mipmapped array on the device. 
             public cudaError_t FreeMipmappedArray(cudaMipmappedArray_t mipmappedArray) { return cudaFreeMipmappedArray(mipmappedArray); }
 
-            [DllImport(CUDARTDLL, CharSet = CharSet.Ansi, EntryPoint = "cudaFreeMipmappedArray")]
+            [DllImport(CUDARTDLL, CharSet = CharSet.Ansi, EntryPoint = "cudaGetMipmappedArrayLevel")]
             static extern cudaError_t cudaGetMipmappedArrayLevel(out cudaArray_t levelArray, cudaMipmappedArray_t mipmappedArray, uint level); // Gets a mipmap level of a CUDA mipmapped array. 
             public cudaError_t GetMipmappedArrayLevel(out cudaArray_t levelArray, cudaMipmappedArray_t mipmappedArray, uint level) { return cudaGetMipmappedArrayLevel(out levelArray, mipmappedArray, level); }
 
