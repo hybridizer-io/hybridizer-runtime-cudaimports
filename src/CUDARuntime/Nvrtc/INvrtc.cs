@@ -58,5 +58,12 @@ namespace Hybridizer.Runtime.CUDAImports
         /// <param name="minor"></param>
         /// <returns></returns>
         nvrtcResult Version(out int major, out int minor);
+        /// <summary>
+        /// get CUBIN (native GPU binary, available since CUDA 11.1)
+        /// </summary>
+        /// <param name="prog"></param>
+        /// <param name="cubin"></param>
+        /// <returns></returns>
+        nvrtcResult GetCUBIN(nvrtcProgram prog, out byte[] cubin);
     }
 }

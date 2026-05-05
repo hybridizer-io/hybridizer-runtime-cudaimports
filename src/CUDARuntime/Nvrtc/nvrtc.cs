@@ -36,14 +36,26 @@ namespace Hybridizer.Runtime.CUDAImports
             string cudaVersion = GetCudaVersion();
             switch(cudaVersion)
             {
+                case "131":
+                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? (INvrtc)new nvrtc131_linux() : new nvrtc131_windows();
+                    break;
+                case "130":
+                    instance = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? (INvrtc)new nvrtc130_linux() : new nvrtc130_windows();
+                    break;
                 case "101":
                     instance = new nvrtc101();
                     break;
                 case "100":
                     instance = new nvrtc10();
                     break;
+                case "110":
+                case "114":
+                case "120":
+                case "124":
+                case "126":
+                    throw new NotImplementedException(string.Format("nvrtc is not yet mapped for CUDA {0} -- use 13.0+ or 10.x", cudaVersion));
                 default:
-                    throw new NotImplementedException("nvrtc is mapped only for cuda > 10");
+                    throw new NotImplementedException(string.Format("nvrtc is not mapped for CUDA version {0}", cudaVersion));
             }
         }
 
@@ -113,6 +125,17 @@ namespace Hybridizer.Runtime.CUDAImports
         public static nvrtcResult Version(out int major, out int minor)
         {
             return instance.Version(out major, out minor);
+        }
+
+        /// <summary>
+        /// get CUBIN (native GPU binary, available since CUDA 11.1)
+        /// </summary>
+        /// <param name="prog"></param>
+        /// <param name="cubin"></param>
+        /// <returns></returns>
+        public static nvrtcResult GetCUBIN(nvrtcProgram prog, out byte[] cubin)
+        {
+            return instance.GetCUBIN(prog, out cubin);
         }
 
         /// <summary>
