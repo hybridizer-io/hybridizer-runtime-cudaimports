@@ -554,6 +554,60 @@ namespace Hybridizer.Runtime.CUDAImports
     }
 
     /// <summary>
+    /// Marks a method (typically an indexer getter/setter) whose call should be
+    /// transcoded as a subscript on a public field of the instance:
+    /// <code>
+    ///   this[i]       -&gt;   (instance)-&gt;FieldName[i]
+    ///   this[i] = v   -&gt;   (instance)-&gt;FieldName[i] = v
+    /// </code>
+    /// The setter case is auto-detected from the method name
+    /// (<c>set_Item</c> / <c>IsSpecialName</c>) by the transcoder.
+    /// </summary>
+    /// <remarks>
+    /// Primary use case: binding C# indexers to the public array field
+    /// <c>x</c> on <c>nvcuda::wmma::fragment</c> specializations.
+    /// </remarks>
+    [Guid("D8A4F2C6-3B7E-4D91-A052-7F1C8E2B5A93")]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, AllowMultiple = true)]
+    public class IntrinsicFieldSubscriptAttribute : IntrinsicAttribute
+    {
+        /// <summary>
+        /// is function ? -- always true (this is a function-shaped intrinsic
+        /// that desugars to a subscript expression in C++).
+        /// </summary>
+        public override bool IsFunction { get { return true; } set { } }
+
+        /// <summary>
+        /// Name of the public field on the C++ type to subscript into.
+        /// </summary>
+        public string FieldName { get; set; }
+
+        /// <summary>
+        /// default constructor
+        /// </summary>
+        public IntrinsicFieldSubscriptAttribute() { }
+
+        /// <summary>
+        /// name constructor
+        /// </summary>
+        /// <param name="fieldName">name of the public field on the C++ instance</param>
+        public IntrinsicFieldSubscriptAttribute(string fieldName) : base(fieldName)
+        {
+            FieldName = fieldName;
+        }
+
+        /// <summary>
+        /// flavor-scoped constructor
+        /// </summary>
+        public IntrinsicFieldSubscriptAttribute(string fieldName, int flavor)
+            : base(fieldName)
+        {
+            FieldName = fieldName;
+            Flavor = flavor;
+        }
+    }
+
+    /// <summary>
     /// rename intrinsic function -- allows dotnet property to be named differently from native version
     /// </summary>
     [Guid("F796E790-522B-4ECE-A25F-07BF145A938A")]
