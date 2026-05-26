@@ -554,6 +554,26 @@ namespace Hybridizer.Runtime.CUDAImports
     }
 
     /// <summary>
+    /// On a <c>ref T</c> / <c>out T</c> parameter of an <see cref="IntrinsicFunctionAttribute"/>,
+    /// force the C# call site to bind the argument to a C++ reference parameter
+    /// (<c>T&amp;</c>) instead of the default pointer ABI (<c>T*</c>).
+    /// </summary>
+    /// <remarks>
+    /// The default for <c>[IntrinsicFunction]</c> + <c>ref T</c> is <c>T*</c> — the
+    /// transcoder emits <c>&amp;local</c> at the call site, matching the C ABI used by
+    /// <c>atomicAdd</c>, <c>atomicMax</c>, <c>hybridizer::atomicExpr&lt;T&gt;::apply</c>,
+    /// and the rest of the pointer-taking intrinsic surface. Apply this attribute on
+    /// the parameter when the native callee declares its argument as a C++ reference
+    /// (<c>T&amp;</c>) instead: the transcoder then wraps the call-site expression with
+    /// <c>*(...)</c>, producing a glvalue the C++ side binds to the reference. Required
+    /// for the <c>nvcuda::wmma::*</c> fragment intrinsics and the
+    /// <c>hybridizer::ldmatrix::*</c> / <c>hybridizer::mma::*</c> PTX wrappers.
+    /// </remarks>
+    [Guid("8B3C5F47-2D49-4A61-9F8E-CF6A12E7B504")]
+    [AttributeUsage(AttributeTargets.Parameter)]
+    public class HandleByRefAttribute : Attribute { }
+
+    /// <summary>
     /// Marks a method (typically an indexer getter/setter) whose call should be
     /// transcoded as a subscript on a public field of the instance:
     /// <code>

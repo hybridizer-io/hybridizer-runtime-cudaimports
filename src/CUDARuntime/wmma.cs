@@ -516,69 +516,69 @@ namespace Hybridizer.Runtime.CUDAImports.wmma
 
         // ---- (16,16,16) half-input ----
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_a_16x16x16_half_row f, half v) { }
+        public static void fill_fragment([HandleByRef] ref frag_a_16x16x16_half_row f, half v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_a_16x16x16_half_col f, half v) { }
+        public static void fill_fragment([HandleByRef] ref frag_a_16x16x16_half_col f, half v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_b_16x16x16_half_row f, half v) { }
+        public static void fill_fragment([HandleByRef] ref frag_b_16x16x16_half_row f, half v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_b_16x16x16_half_col f, half v) { }
+        public static void fill_fragment([HandleByRef] ref frag_b_16x16x16_half_col f, half v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_acc_16x16x16_half f, half v) { }
+        public static void fill_fragment([HandleByRef] ref frag_acc_16x16x16_half f, half v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_acc_16x16x16_float f, float v) { }
+        public static void fill_fragment([HandleByRef] ref frag_acc_16x16x16_float f, float v) { }
 
         // ---- (32,8,16) half-input ----
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_a_32x8x16_half_row f, half v) { }
+        public static void fill_fragment([HandleByRef] ref frag_a_32x8x16_half_row f, half v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_a_32x8x16_half_col f, half v) { }
+        public static void fill_fragment([HandleByRef] ref frag_a_32x8x16_half_col f, half v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_b_32x8x16_half_row f, half v) { }
+        public static void fill_fragment([HandleByRef] ref frag_b_32x8x16_half_row f, half v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_b_32x8x16_half_col f, half v) { }
+        public static void fill_fragment([HandleByRef] ref frag_b_32x8x16_half_col f, half v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_acc_32x8x16_half f, half v) { }
+        public static void fill_fragment([HandleByRef] ref frag_acc_32x8x16_half f, half v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_acc_32x8x16_float f, float v) { }
+        public static void fill_fragment([HandleByRef] ref frag_acc_32x8x16_float f, float v) { }
 
         // ---- (8,32,16) half-input ----
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_a_8x32x16_half_row f, half v) { }
+        public static void fill_fragment([HandleByRef] ref frag_a_8x32x16_half_row f, half v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_a_8x32x16_half_col f, half v) { }
+        public static void fill_fragment([HandleByRef] ref frag_a_8x32x16_half_col f, half v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_b_8x32x16_half_row f, half v) { }
+        public static void fill_fragment([HandleByRef] ref frag_b_8x32x16_half_row f, half v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_b_8x32x16_half_col f, half v) { }
+        public static void fill_fragment([HandleByRef] ref frag_b_8x32x16_half_col f, half v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_acc_8x32x16_half f, half v) { }
+        public static void fill_fragment([HandleByRef] ref frag_acc_8x32x16_half f, half v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_acc_8x32x16_float f, float v) { }
+        public static void fill_fragment([HandleByRef] ref frag_acc_8x32x16_float f, float v) { }
 
         // ---- (16,16,8) tf32 ----
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_a_16x16x8_tf32_row f, float v) { }
+        public static void fill_fragment([HandleByRef] ref frag_a_16x16x8_tf32_row f, float v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_a_16x16x8_tf32_col f, float v) { }
+        public static void fill_fragment([HandleByRef] ref frag_a_16x16x8_tf32_col f, float v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_b_16x16x8_tf32_row f, float v) { }
+        public static void fill_fragment([HandleByRef] ref frag_b_16x16x8_tf32_row f, float v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_b_16x16x8_tf32_col f, float v) { }
+        public static void fill_fragment([HandleByRef] ref frag_b_16x16x8_tf32_col f, float v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_acc_16x16x8_float f, float v) { }
+        public static void fill_fragment([HandleByRef] ref frag_acc_16x16x8_float f, float v) { }
 
         // ---- (8,8,4) double ----
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_a_8x8x4_double_row f, double v) { }
+        public static void fill_fragment([HandleByRef] ref frag_a_8x8x4_double_row f, double v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_a_8x8x4_double_col f, double v) { }
+        public static void fill_fragment([HandleByRef] ref frag_a_8x8x4_double_col f, double v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_b_8x8x4_double_row f, double v) { }
+        public static void fill_fragment([HandleByRef] ref frag_b_8x8x4_double_row f, double v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_b_8x8x4_double_col f, double v) { }
+        public static void fill_fragment([HandleByRef] ref frag_b_8x8x4_double_col f, double v) { }
         [IntrinsicFunction("nvcuda::wmma::fill_fragment")]
-        public static void fill_fragment(ref frag_acc_8x8x4_double f, double v) { }
+        public static void fill_fragment([HandleByRef] ref frag_acc_8x8x4_double f, double v) { }
 
         #endregion
 
@@ -586,74 +586,74 @@ namespace Hybridizer.Runtime.CUDAImports.wmma
 
         // ---- (16,16,16) half ----
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_a_16x16x16_half_row f, half* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_a_16x16x16_half_row f, half* mptr, uint ldm) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_a_16x16x16_half_col f, half* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_a_16x16x16_half_col f, half* mptr, uint ldm) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_b_16x16x16_half_row f, half* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_b_16x16x16_half_row f, half* mptr, uint ldm) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_b_16x16x16_half_col f, half* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_b_16x16x16_half_col f, half* mptr, uint ldm) { }
 
         // ---- (32,8,16) half ----
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_a_32x8x16_half_row f, half* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_a_32x8x16_half_row f, half* mptr, uint ldm) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_a_32x8x16_half_col f, half* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_a_32x8x16_half_col f, half* mptr, uint ldm) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_b_32x8x16_half_row f, half* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_b_32x8x16_half_row f, half* mptr, uint ldm) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_b_32x8x16_half_col f, half* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_b_32x8x16_half_col f, half* mptr, uint ldm) { }
 
         // ---- (8,32,16) half ----
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_a_8x32x16_half_row f, half* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_a_8x32x16_half_row f, half* mptr, uint ldm) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_a_8x32x16_half_col f, half* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_a_8x32x16_half_col f, half* mptr, uint ldm) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_b_8x32x16_half_row f, half* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_b_8x32x16_half_row f, half* mptr, uint ldm) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_b_8x32x16_half_col f, half* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_b_8x32x16_half_col f, half* mptr, uint ldm) { }
 
         // ---- (16,16,8) tf32 (mptr is float*; storage is float, MMA reads as tf32) ----
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_a_16x16x8_tf32_row f, float* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_a_16x16x8_tf32_row f, float* mptr, uint ldm) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_a_16x16x8_tf32_col f, float* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_a_16x16x8_tf32_col f, float* mptr, uint ldm) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_b_16x16x8_tf32_row f, float* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_b_16x16x8_tf32_row f, float* mptr, uint ldm) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_b_16x16x8_tf32_col f, float* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_b_16x16x8_tf32_col f, float* mptr, uint ldm) { }
 
         // ---- (8,8,4) double ----
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_a_8x8x4_double_row f, double* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_a_8x8x4_double_row f, double* mptr, uint ldm) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_a_8x8x4_double_col f, double* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_a_8x8x4_double_col f, double* mptr, uint ldm) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_b_8x8x4_double_row f, double* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_b_8x8x4_double_row f, double* mptr, uint ldm) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_b_8x8x4_double_col f, double* mptr, uint ldm) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_b_8x8x4_double_col f, double* mptr, uint ldm) { }
 
         #endregion
 
         #region load_matrix_sync (accumulator -- takes layout_t)
 
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_acc_16x16x16_half  f, half*   mptr, uint ldm, wmma_layout layout) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_acc_16x16x16_half  f, half*   mptr, uint ldm, wmma_layout layout) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_acc_16x16x16_float f, float*  mptr, uint ldm, wmma_layout layout) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_acc_16x16x16_float f, float*  mptr, uint ldm, wmma_layout layout) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_acc_32x8x16_half   f, half*   mptr, uint ldm, wmma_layout layout) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_acc_32x8x16_half   f, half*   mptr, uint ldm, wmma_layout layout) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_acc_32x8x16_float  f, float*  mptr, uint ldm, wmma_layout layout) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_acc_32x8x16_float  f, float*  mptr, uint ldm, wmma_layout layout) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_acc_8x32x16_half   f, half*   mptr, uint ldm, wmma_layout layout) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_acc_8x32x16_half   f, half*   mptr, uint ldm, wmma_layout layout) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_acc_8x32x16_float  f, float*  mptr, uint ldm, wmma_layout layout) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_acc_8x32x16_float  f, float*  mptr, uint ldm, wmma_layout layout) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_acc_16x16x8_float  f, float*  mptr, uint ldm, wmma_layout layout) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_acc_16x16x8_float  f, float*  mptr, uint ldm, wmma_layout layout) { }
         [IntrinsicFunction("nvcuda::wmma::load_matrix_sync")]
-        public static unsafe void load_matrix_sync(ref frag_acc_8x8x4_double   f, double* mptr, uint ldm, wmma_layout layout) { }
+        public static unsafe void load_matrix_sync([HandleByRef] ref frag_acc_8x8x4_double   f, double* mptr, uint ldm, wmma_layout layout) { }
 
         #endregion
 
@@ -682,83 +682,83 @@ namespace Hybridizer.Runtime.CUDAImports.wmma
 
         // ---- (16,16,16) half-input, float acc ----
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_16x16x16_float d, frag_a_16x16x16_half_row a, frag_b_16x16x16_half_row b, frag_acc_16x16x16_float c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_16x16x16_float d, frag_a_16x16x16_half_row a, frag_b_16x16x16_half_row b, frag_acc_16x16x16_float c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_16x16x16_float d, frag_a_16x16x16_half_row a, frag_b_16x16x16_half_col b, frag_acc_16x16x16_float c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_16x16x16_float d, frag_a_16x16x16_half_row a, frag_b_16x16x16_half_col b, frag_acc_16x16x16_float c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_16x16x16_float d, frag_a_16x16x16_half_col a, frag_b_16x16x16_half_row b, frag_acc_16x16x16_float c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_16x16x16_float d, frag_a_16x16x16_half_col a, frag_b_16x16x16_half_row b, frag_acc_16x16x16_float c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_16x16x16_float d, frag_a_16x16x16_half_col a, frag_b_16x16x16_half_col b, frag_acc_16x16x16_float c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_16x16x16_float d, frag_a_16x16x16_half_col a, frag_b_16x16x16_half_col b, frag_acc_16x16x16_float c) { }
 
         // ---- (16,16,16) half-input, half acc ----
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_16x16x16_half d, frag_a_16x16x16_half_row a, frag_b_16x16x16_half_row b, frag_acc_16x16x16_half c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_16x16x16_half d, frag_a_16x16x16_half_row a, frag_b_16x16x16_half_row b, frag_acc_16x16x16_half c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_16x16x16_half d, frag_a_16x16x16_half_row a, frag_b_16x16x16_half_col b, frag_acc_16x16x16_half c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_16x16x16_half d, frag_a_16x16x16_half_row a, frag_b_16x16x16_half_col b, frag_acc_16x16x16_half c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_16x16x16_half d, frag_a_16x16x16_half_col a, frag_b_16x16x16_half_row b, frag_acc_16x16x16_half c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_16x16x16_half d, frag_a_16x16x16_half_col a, frag_b_16x16x16_half_row b, frag_acc_16x16x16_half c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_16x16x16_half d, frag_a_16x16x16_half_col a, frag_b_16x16x16_half_col b, frag_acc_16x16x16_half c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_16x16x16_half d, frag_a_16x16x16_half_col a, frag_b_16x16x16_half_col b, frag_acc_16x16x16_half c) { }
 
         // ---- (32,8,16) half-input, float acc ----
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_32x8x16_float d, frag_a_32x8x16_half_row a, frag_b_32x8x16_half_row b, frag_acc_32x8x16_float c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_32x8x16_float d, frag_a_32x8x16_half_row a, frag_b_32x8x16_half_row b, frag_acc_32x8x16_float c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_32x8x16_float d, frag_a_32x8x16_half_row a, frag_b_32x8x16_half_col b, frag_acc_32x8x16_float c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_32x8x16_float d, frag_a_32x8x16_half_row a, frag_b_32x8x16_half_col b, frag_acc_32x8x16_float c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_32x8x16_float d, frag_a_32x8x16_half_col a, frag_b_32x8x16_half_row b, frag_acc_32x8x16_float c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_32x8x16_float d, frag_a_32x8x16_half_col a, frag_b_32x8x16_half_row b, frag_acc_32x8x16_float c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_32x8x16_float d, frag_a_32x8x16_half_col a, frag_b_32x8x16_half_col b, frag_acc_32x8x16_float c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_32x8x16_float d, frag_a_32x8x16_half_col a, frag_b_32x8x16_half_col b, frag_acc_32x8x16_float c) { }
 
         // ---- (32,8,16) half-input, half acc ----
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_32x8x16_half d, frag_a_32x8x16_half_row a, frag_b_32x8x16_half_row b, frag_acc_32x8x16_half c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_32x8x16_half d, frag_a_32x8x16_half_row a, frag_b_32x8x16_half_row b, frag_acc_32x8x16_half c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_32x8x16_half d, frag_a_32x8x16_half_row a, frag_b_32x8x16_half_col b, frag_acc_32x8x16_half c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_32x8x16_half d, frag_a_32x8x16_half_row a, frag_b_32x8x16_half_col b, frag_acc_32x8x16_half c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_32x8x16_half d, frag_a_32x8x16_half_col a, frag_b_32x8x16_half_row b, frag_acc_32x8x16_half c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_32x8x16_half d, frag_a_32x8x16_half_col a, frag_b_32x8x16_half_row b, frag_acc_32x8x16_half c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_32x8x16_half d, frag_a_32x8x16_half_col a, frag_b_32x8x16_half_col b, frag_acc_32x8x16_half c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_32x8x16_half d, frag_a_32x8x16_half_col a, frag_b_32x8x16_half_col b, frag_acc_32x8x16_half c) { }
 
         // ---- (8,32,16) half-input, float acc ----
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_8x32x16_float d, frag_a_8x32x16_half_row a, frag_b_8x32x16_half_row b, frag_acc_8x32x16_float c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_8x32x16_float d, frag_a_8x32x16_half_row a, frag_b_8x32x16_half_row b, frag_acc_8x32x16_float c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_8x32x16_float d, frag_a_8x32x16_half_row a, frag_b_8x32x16_half_col b, frag_acc_8x32x16_float c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_8x32x16_float d, frag_a_8x32x16_half_row a, frag_b_8x32x16_half_col b, frag_acc_8x32x16_float c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_8x32x16_float d, frag_a_8x32x16_half_col a, frag_b_8x32x16_half_row b, frag_acc_8x32x16_float c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_8x32x16_float d, frag_a_8x32x16_half_col a, frag_b_8x32x16_half_row b, frag_acc_8x32x16_float c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_8x32x16_float d, frag_a_8x32x16_half_col a, frag_b_8x32x16_half_col b, frag_acc_8x32x16_float c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_8x32x16_float d, frag_a_8x32x16_half_col a, frag_b_8x32x16_half_col b, frag_acc_8x32x16_float c) { }
 
         // ---- (8,32,16) half-input, half acc ----
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_8x32x16_half d, frag_a_8x32x16_half_row a, frag_b_8x32x16_half_row b, frag_acc_8x32x16_half c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_8x32x16_half d, frag_a_8x32x16_half_row a, frag_b_8x32x16_half_row b, frag_acc_8x32x16_half c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_8x32x16_half d, frag_a_8x32x16_half_row a, frag_b_8x32x16_half_col b, frag_acc_8x32x16_half c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_8x32x16_half d, frag_a_8x32x16_half_row a, frag_b_8x32x16_half_col b, frag_acc_8x32x16_half c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_8x32x16_half d, frag_a_8x32x16_half_col a, frag_b_8x32x16_half_row b, frag_acc_8x32x16_half c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_8x32x16_half d, frag_a_8x32x16_half_col a, frag_b_8x32x16_half_row b, frag_acc_8x32x16_half c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_8x32x16_half d, frag_a_8x32x16_half_col a, frag_b_8x32x16_half_col b, frag_acc_8x32x16_half c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_8x32x16_half d, frag_a_8x32x16_half_col a, frag_b_8x32x16_half_col b, frag_acc_8x32x16_half c) { }
 
         // ---- (16,16,8) tf32, float acc ----
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_16x16x8_float d, frag_a_16x16x8_tf32_row a, frag_b_16x16x8_tf32_row b, frag_acc_16x16x8_float c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_16x16x8_float d, frag_a_16x16x8_tf32_row a, frag_b_16x16x8_tf32_row b, frag_acc_16x16x8_float c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_16x16x8_float d, frag_a_16x16x8_tf32_row a, frag_b_16x16x8_tf32_col b, frag_acc_16x16x8_float c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_16x16x8_float d, frag_a_16x16x8_tf32_row a, frag_b_16x16x8_tf32_col b, frag_acc_16x16x8_float c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_16x16x8_float d, frag_a_16x16x8_tf32_col a, frag_b_16x16x8_tf32_row b, frag_acc_16x16x8_float c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_16x16x8_float d, frag_a_16x16x8_tf32_col a, frag_b_16x16x8_tf32_row b, frag_acc_16x16x8_float c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_16x16x8_float d, frag_a_16x16x8_tf32_col a, frag_b_16x16x8_tf32_col b, frag_acc_16x16x8_float c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_16x16x8_float d, frag_a_16x16x8_tf32_col a, frag_b_16x16x8_tf32_col b, frag_acc_16x16x8_float c) { }
 
         // ---- (8,8,4) double, double acc ----
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_8x8x4_double d, frag_a_8x8x4_double_row a, frag_b_8x8x4_double_row b, frag_acc_8x8x4_double c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_8x8x4_double d, frag_a_8x8x4_double_row a, frag_b_8x8x4_double_row b, frag_acc_8x8x4_double c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_8x8x4_double d, frag_a_8x8x4_double_row a, frag_b_8x8x4_double_col b, frag_acc_8x8x4_double c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_8x8x4_double d, frag_a_8x8x4_double_row a, frag_b_8x8x4_double_col b, frag_acc_8x8x4_double c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_8x8x4_double d, frag_a_8x8x4_double_col a, frag_b_8x8x4_double_row b, frag_acc_8x8x4_double c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_8x8x4_double d, frag_a_8x8x4_double_col a, frag_b_8x8x4_double_row b, frag_acc_8x8x4_double c) { }
         [IntrinsicFunction("nvcuda::wmma::mma_sync")]
-        public static void mma_sync(ref frag_acc_8x8x4_double d, frag_a_8x8x4_double_col a, frag_b_8x8x4_double_col b, frag_acc_8x8x4_double c) { }
+        public static void mma_sync([HandleByRef] ref frag_acc_8x8x4_double d, frag_a_8x8x4_double_col a, frag_b_8x8x4_double_col b, frag_acc_8x8x4_double c) { }
 
         #endregion
     }

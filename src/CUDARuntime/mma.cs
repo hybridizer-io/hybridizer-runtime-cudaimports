@@ -47,7 +47,7 @@ namespace Hybridizer.Runtime.CUDAImports.mma
         /// </summary>
         [IntrinsicFunction("hybridizer::mma::m16n8k16_f32_f16_f16_f32")]
         public static void m16n8k16_f32_f16_f16_f32(
-            ref float dc0, ref float dc1, ref float dc2, ref float dc3,
+            [HandleByRef] ref float dc0, [HandleByRef] ref float dc1, [HandleByRef] ref float dc2, [HandleByRef] ref float dc3,
             uint a0, uint a1, uint a2, uint a3,
             uint b0, uint b1) { }
     }
