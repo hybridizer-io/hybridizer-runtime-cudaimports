@@ -39,11 +39,11 @@ namespace Hybridizer.Runtime.CUDAImports.ldmatrix
 
         /// <summary>Load 1 of 8x8 b16. Lane <c>i</c> provides address for row <c>i</c> of the matrix.</summary>
         [IntrinsicFunction("hybridizer::ldmatrix::x1_b16")]
-        public static void x1_b16(out uint d0, uint shmem_addr) { d0 = 0; }
+        public static void x1_b16([HandleByRef] out uint d0, uint shmem_addr) { d0 = 0; }
 
         /// <summary>Load 2 of 8x8 b16. Lanes 0..7 → matrix 0, lanes 8..15 → matrix 1.</summary>
         [IntrinsicFunction("hybridizer::ldmatrix::x2_b16")]
-        public static void x2_b16(out uint d0, out uint d1, uint shmem_addr) { d0 = d1 = 0; }
+        public static void x2_b16([HandleByRef] out uint d0, [HandleByRef] out uint d1, uint shmem_addr) { d0 = d1 = 0; }
 
         /// <summary>
         /// Load 4 of 8x8 b16. Lanes 0..7 / 8..15 / 16..23 / 24..31 provide
@@ -51,14 +51,14 @@ namespace Hybridizer.Runtime.CUDAImports.ldmatrix
         /// up holding 2 halves from each of the 4 matrices (4 uint32 = 8 b16).
         /// </summary>
         [IntrinsicFunction("hybridizer::ldmatrix::x4_b16")]
-        public static void x4_b16(out uint d0, out uint d1, out uint d2, out uint d3, uint shmem_addr)
+        public static void x4_b16([HandleByRef] out uint d0, [HandleByRef] out uint d1, [HandleByRef] out uint d2, [HandleByRef] out uint d3, uint shmem_addr)
         {
             d0 = d1 = d2 = d3 = 0;
         }
 
         /// <summary>Load 4 of 8x8 b16, transposing each 8x8 during the load.</summary>
         [IntrinsicFunction("hybridizer::ldmatrix::x4_trans_b16")]
-        public static void x4_trans_b16(out uint d0, out uint d1, out uint d2, out uint d3, uint shmem_addr)
+        public static void x4_trans_b16([HandleByRef] out uint d0, [HandleByRef] out uint d1, [HandleByRef] out uint d2, [HandleByRef] out uint d3, uint shmem_addr)
         {
             d0 = d1 = d2 = d3 = 0;
         }
