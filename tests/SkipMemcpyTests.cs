@@ -614,6 +614,40 @@ public class CudaSkipMemcpyTests
         Assert.That(cuda.DeviceSynchronize(), Is.EqualTo(cudaError_t.cudaSuccess));
     }
 
+    private static unsafe long ReadDeviceInt64(IntPtr devicePtr)
+    {
+        long value = 0;
+        cuda.DeviceSynchronize();
+        cuda.Memcpy((IntPtr)(&value), devicePtr, sizeof(long), cudaMemcpyKind.cudaMemcpyDeviceToHost);
+        return value;
+    }
+
+    [Test]
+    public unsafe void CudaOutOnlyClassWithArray_NestedArrayPointerUploaded()  // regression: issue #50
+    {
+        // A reference type marshalled [Out]-only (skipMemcpy = true) must still have its object
+        // header uploaded to the device. The header carries the device pointer to the nested
+        // array — which IS allocated even when skipMemcpy is true (only the leaf array *data*
+        // copy is suppressed). Before the fix the header itself was never copied, so the
+        // device-side array pointer read as 0x0 and a kernel writing through it faulted
+        // (issue #50: "700 : an illegal memory access").
+        var instance = new MyClassWithNestedArray { Data = new double[] { 0, 0, 0 }, Factor = 0.0 };
+
+        IntPtr objDev = marshaller.MarshalManagedToNative(instance, true);   // skipMemcpy = true ([Out])
+        Assert.That(objDev, Is.Not.EqualTo(IntPtr.Zero));
+
+        // Device object layout: [0] typeId, [8] Data array pointer, [16] Factor. With Factor = 0
+        // and typeId = 0, the Data pointer is the only field that can be non-zero — it must hold
+        // the device address of the allocated array.
+        long dataPointerField = ReadDeviceInt64(objDev + 8);
+        Assert.That(dataPointerField, Is.Not.EqualTo(0L),
+            "device object header has a NULL nested-array pointer — the header was not uploaded "
+            + "for an [Out]-only class parameter (#50)");
+
+        marshaller.CleanUpManagedData(instance, false);
+        Assert.That(cuda.DeviceSynchronize(), Is.EqualTo(cudaError_t.cudaSuccess));
+    }
+
     [Test]
     public void CudaCleanUpNativeData_SkipMemcpy()
     {

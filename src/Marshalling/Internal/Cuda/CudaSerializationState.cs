@@ -246,14 +246,16 @@ namespace Hybridizer.Runtime.CUDAImports
 
             internal override void CopyObject(object param, IntPtr dev, bool skipMemcpy = false)
             {
-                if (!skipMemcpy)
-                {
-                    var size = (uint)ms.Length;
-                    byte[] numArray = ms.ToArray();
-                    var gcHandle = GCHandle.Alloc(numArray, GCHandleType.Pinned);
-                    IntPtr src = Marshal.UnsafeAddrOfPinnedArrayElement(numArray, 0);
-                    CudaSerState.CudaMemCopy(dev, src, size, cudaMemcpyKind.cudaMemcpyHostToDevice, gcHandle);
-                }
+                // The object header carries the device pointers to nested arrays/objects and the
+                // typeId, so it must ALWAYS be uploaded — even for [Out]-only parameters. skipMemcpy
+                // only suppresses the host->device copy of leaf array *data* (handled in
+                // BinaryCopyArray / SerializeObjectArray, which still allocate). Skipping the header
+                // here left the device-side nested pointers NULL and faulted any writing kernel. See #50.
+                var size = (uint)ms.Length;
+                byte[] numArray = ms.ToArray();
+                var gcHandle = GCHandle.Alloc(numArray, GCHandleType.Pinned);
+                IntPtr src = Marshal.UnsafeAddrOfPinnedArrayElement(numArray, 0);
+                CudaSerState.CudaMemCopy(dev, src, size, cudaMemcpyKind.cudaMemcpyHostToDevice, gcHandle);
             }
         }
 
