@@ -649,6 +649,28 @@ public class CudaSkipMemcpyTests
     }
 
     [Test]
+    public void CudaAggregatedMarshal_ClassWithArray_NoPlatformSpecificMemcpy()  // portability
+    {
+        // The aggregated marshaller stages array data into a host buffer with a host->host copy.
+        // That copy used to be a Windows-only `msvcrt.dll!memcpy` P/Invoke, which threw
+        // DllNotFoundException on Linux/macOS (in AggregatedAllocator.cpy). It now uses the
+        // cross-platform Buffer.MemoryCopy. Exercise the aggregated path end to end.
+        var aggregated = CudaMarshaler.Create(true);
+        try
+        {
+            var instance = new MyClassWithNestedArray { Data = new double[] { 1, 2, 3, 4 }, Factor = 2.0 };
+            IntPtr ptr = aggregated.MarshalManagedToNative(instance, false);
+            Assert.That(ptr, Is.Not.EqualTo(IntPtr.Zero));
+            aggregated.CleanUpManagedData(instance, false);
+            Assert.That(cuda.DeviceSynchronize(), Is.EqualTo(cudaError_t.cudaSuccess));
+        }
+        finally
+        {
+            aggregated.Free();
+        }
+    }
+
+    [Test]
     public void CudaCleanUpNativeData_SkipMemcpy()
     {
         var instance = new MyTestClass { Value = 42.0, Count = 7 };
