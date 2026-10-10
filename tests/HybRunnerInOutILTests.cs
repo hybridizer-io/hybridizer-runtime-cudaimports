@@ -15,7 +15,7 @@ namespace Hybridizer.Runtime.CUDAImports.Tests;
 /// Creates a minimal stub .so, uses HybRunner.OMP to wrap test targets,
 /// then inspects the generated IL byte arrays.
 /// </summary>
-[TestFixture]
+[TestFixture, Category("Native"), NonParallelizable]
 public class HybRunnerInOutILTests
 {
     private static string _stubDir;
@@ -61,54 +61,56 @@ int HybridizerGetShallowSize(const char* name) {
     public void OneTimeSetUp()
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            Assert.Ignore("These tests require Linux (dlopen-based HybRunner)");
+            TestPrerequisites.Missing("HybRunner stub is supported on Linux only; Windows ABI stub is not ported.");
 
         _stubDir = Path.Combine(Path.GetTempPath(), "hybrunner_il_tests_" + Guid.NewGuid().ToString("N").Substring(0, 8));
-        Directory.CreateDirectory(_stubDir);
-
-        string stubSourcePath = Path.Combine(_stubDir, "hybstub.c");
-        File.WriteAllText(stubSourcePath, StubSource);
-
-        _stubPath = Path.Combine(_stubDir, "hybstub.so");
-        var psi = new ProcessStartInfo("gcc", $"-shared -fPIC -o \"{_stubPath}\" \"{stubSourcePath}\"")
-        {
-            RedirectStandardError = true,
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-        };
-
-        Process proc;
         try
         {
-            proc = Process.Start(psi);
-        }
-        catch (Exception ex)
-        {
-            Assert.Ignore("gcc not available: " + ex.Message);
-            return;
-        }
+            Directory.CreateDirectory(_stubDir);
 
-        proc.WaitForExit(15000);
-        if (proc.ExitCode != 0)
-        {
-            string stderr = proc.StandardError.ReadToEnd();
-            Assert.Ignore("gcc compilation failed: " + stderr);
-            return;
-        }
+            string stubSourcePath = Path.Combine(_stubDir, "hybstub.c");
+            File.WriteAllText(stubSourcePath, StubSource);
 
-        _runner = HybRunner.OMP(_stubPath);
+            _stubPath = Path.Combine(_stubDir, "hybstub.so");
+            var compiler = Environment.GetEnvironmentVariable("HYBRIDIZER_TEST_CC") ?? "gcc";
+            var psi = new ProcessStartInfo(compiler)
+            {
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+            };
+            foreach (var arg in new[] { "-shared", "-fPIC", "-o", _stubPath, stubSourcePath })
+                psi.ArgumentList.Add(arg);
+
+            using var proc = Process.Start(psi) ?? throw new InvalidOperationException("Compiler did not start.");
+            var stdout = proc.StandardOutput.ReadToEndAsync();
+            var stderr = proc.StandardError.ReadToEndAsync();
+            if (!proc.WaitForExit(15000))
+            {
+                proc.Kill(entireProcessTree: true);
+                proc.WaitForExit(5000);
+                Assert.Fail("Stub compiler exceeded 15 seconds and was terminated.");
+            }
+            Assert.That(proc.ExitCode, Is.Zero,
+                $"Stub compilation failed ({compiler}): {stderr.GetAwaiter().GetResult()} {stdout.GetAwaiter().GetResult()}");
+            _runner = HybRunner.OMP(_stubPath);
+        }
+        catch
+        {
+            CleanUpStub();
+            throw; // A required compiler/load failure is never a successful skip.
+        }
+    }
+
+    private static void CleanUpStub()
+    {
+        _runner = null;
+        if (_stubDir != null && Directory.Exists(_stubDir))
+            Directory.Delete(_stubDir, true);
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown()
-    {
-        try
-        {
-            if (_stubDir != null && Directory.Exists(_stubDir))
-                Directory.Delete(_stubDir, true);
-        }
-        catch { /* best effort cleanup */ }
-    }
+    public void OneTimeTearDown() => CleanUpStub();
 
     #region Helpers
 
@@ -163,9 +165,9 @@ int HybridizerGetShallowSize(const char* name) {
         {
             if (offset + 1 >= il.Length) return 1;
             byte op2 = il[offset + 1];
-            // ceq(0x01), cgt(0x02), clt(0x04) — no operand
+            // ceq(0x01), cgt(0x02), clt(0x04) â€” no operand
             if (op2 <= 0x06) return 2;
-            // ldarg(0x09), starg(0x0B), ldloc(0x0C), stloc(0x0E), ldloca(0x0D) — 2-byte operand
+            // ldarg(0x09), starg(0x0B), ldloc(0x0C), stloc(0x0E), ldloca(0x0D) â€” 2-byte operand
             if (op2 >= 0x09 && op2 <= 0x0E) return 4;
             return 2; // conservative default for unknown 0xFE opcodes
         }

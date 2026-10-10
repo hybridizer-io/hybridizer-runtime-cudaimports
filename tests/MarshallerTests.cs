@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using NUnit.Framework;
 using Hybridizer.Runtime.CUDAImports;
 
@@ -6,9 +6,20 @@ namespace Hybridizer.Runtime.CUDAImports.Tests;
 
 public class MarshallerTests
 {
+    private MainMemoryMarshaler marshaller;
+
+    [SetUp]
+    public void SetUp() => marshaller = MainMemoryMarshaler.Create(HybridizerFlavor.OMP);
+
+    [TearDown]
+    public void TearDown()
+    {
+        marshaller?.Free();
+        Assert.That(marshaller?.IsClean(), Is.True, "Native allocations remain after cleanup.");
+    }
+
     [Test]
     public unsafe void TestMarshalClassWithNumericAlignedFields() {
-        var marshaller = MainMemoryMarshaler.Create(HybridizerFlavor.OMP);
         MyClassAlignedFields instance = new()
         {
             d1 = 12.0,
@@ -30,7 +41,6 @@ public class MarshallerTests
 
     [Test]
     public unsafe void TestMarshalStructWithNumericUnAlignedFields() {
-        var marshaller = MainMemoryMarshaler.Create(HybridizerFlavor.OMP);
         MyStructUnalignedFields instance = new()
         {
             d1 = 12.0,
@@ -51,7 +61,6 @@ public class MarshallerTests
     [Test]
     public unsafe void TestMarshalArrayOfNullableInt() {
         int?[] a = [1, null, 2, null, 3, null];
-        var marshaller = MainMemoryMarshaler.Create(HybridizerFlavor.OMP);
         int* native = (int*) marshaller.MarshalManagedToNative(a);
         int[] ret = new int[12];
         for(int i = 0; i < 12; ++i) {
@@ -79,7 +88,6 @@ public class MarshallerTests
 
     [Test]
     public unsafe void TestMarshalClassWithNumericAlignedFields2() {
-        var marshaller = MainMemoryMarshaler.Create(HybridizerFlavor.OMP);
         MyClassAlignedFields2 instance = new()
         {
             d1 = 12.0,
@@ -101,13 +109,20 @@ public class MarshallerTests
 
     }
 
-    [Test]
-    public void AllocateLarge() {
-        double[] a = new double[1000000000];
-        var m = MainMemoryMarshaler.Create(HybridizerFlavor.OMP);
-        IntPtr pi = m.MarshalManagedToNative(a);
+    [Test, Category("Stress"), Explicit("Requires HYBRIDIZER_RUN_STRESS=1 and an explicit memory budget.")]
+    public void AllocateLarge()
+    {
+        Assert.That(Environment.GetEnvironmentVariable("HYBRIDIZER_RUN_STRESS"), Is.EqualTo("1"),
+            "Use tools/run-tests.py --suite stress --stress-doubles N.");
+        Assert.That(long.TryParse(Environment.GetEnvironmentVariable("HYBRIDIZER_STRESS_DOUBLES"), out var count),
+            Is.True, "Specify HYBRIDIZER_STRESS_DOUBLES.");
+        Assert.That(count, Is.InRange(1L, 1_000_000_000L));
+        TestContext.Out.WriteLine($"Stress budget: {count} doubles, at least {count * 16L} bytes managed + native.");
+        double[] a = new double[count];
+        IntPtr pi = marshaller.MarshalManagedToNative(a);
         Assert.That(pi, Is.Not.EqualTo(IntPtr.Zero));
     }
+
 }
 
 // fields are alphabetically ordered
