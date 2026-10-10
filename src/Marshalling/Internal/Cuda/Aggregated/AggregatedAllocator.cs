@@ -197,9 +197,6 @@ namespace Hybridizer.Runtime.CUDAImports
                 }
             }
 
-            [DllImport("msvcrt.dll", EntryPoint = "memcpy", CallingConvention = CallingConvention.Cdecl, SetLastError = false), SuppressUnmanagedCodeSecurity]
-            public static unsafe extern void* memcpy(void* dest, void* src, ulong count);
-
             public void cpy(IntPtr dev, Array param, uint size)
             {
                 if (size == 0) return;
@@ -217,7 +214,12 @@ namespace Hybridizer.Runtime.CUDAImports
                     IntPtr src = Marshal.UnsafeAddrOfPinnedArrayElement(param as Array, 0);
                     unsafe
                     {
-                        memcpy((byte*)_hostBuffer.ToPointer() + offset, (byte*)src.ToPointer(), size);
+                        // host->host copy of the pinned source array into the aggregated staging
+                        // buffer. Buffer.MemoryCopy is cross-platform; this was previously a
+                        // Windows-only msvcrt.dll!memcpy P/Invoke that threw DllNotFoundException
+                        // on Linux/macOS.
+                        byte* dst = (byte*)_hostBuffer.ToPointer() + offset;
+                        Buffer.MemoryCopy((byte*)src.ToPointer(), dst, aggregatedAllocatedSize - offset, size);
                     }
                     gcHandle.Free();
                 }
