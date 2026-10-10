@@ -15,6 +15,7 @@ namespace Hybridizer.Runtime.CUDAImports.Tests;
 /// Tests are TDD-style: they describe the desired behavior and currently fail
 /// against the buggy code. Each test is annotated with the matching issue.
 /// </summary>
+[NonParallelizable]
 public class BugRegressionTests
 {
     private static string RepoRoot
@@ -192,30 +193,12 @@ public class BugRegressionTests
     [Test, Description("Issue #32: SetCudaVersion must take effect even after the cuda type has been initialized.")]
     public void SetCudaVersion_RebindsInstance()
     {
-        // Save & restore shared state to keep this test isolated from the
-        // existing CudaVersionTests fixture (which doesn't reset _cudaversion).
-        var versionField = typeof(cuda).GetField("_cudaversion", BindingFlags.Static | BindingFlags.NonPublic);
-        var savedVersion = versionField?.GetValue(null);
-        var savedInstance = cuda.instance;
-        try
-        {
-            _ = cuda.GetCudaVersion();
-            var before = cuda.instance.GetType().Name;
-
-            // Pick a target version that differs from whatever the default selected.
-            string target = before.Contains("130") ? "13.1" : "13.0";
-            cuda.SetCudaVersion(target);
-
-            var after = cuda.instance.GetType().Name;
-            var expectedFragment = target.Replace(".", "");
-            Assert.That(after, Does.Contain(expectedFragment),
-                $"After SetCudaVersion(\"{target}\"), instance is still {after} (was {before}).");
-        }
-        finally
-        {
-            versionField?.SetValue(null, savedVersion);
-            cuda.instance = savedInstance;
-        }
+        using var scope = new CudaTestScope();
+        var before = cuda.instance.GetType().Name;
+        string target = before.Contains("130") ? "13.1" : "13.0";
+        cuda.SetCudaVersion(target);
+        Assert.That(cuda.instance.GetType().Name, Does.Contain(target.Replace(".", "")),
+            $"After SetCudaVersion, instance did not change from {before}.");
     }
 
     // -----------------------------------------------------------------------
@@ -384,17 +367,17 @@ public class BugRegressionTests
         try { return probe(); }
         catch (DllNotFoundException ex)
         {
-            Assert.Ignore($"{libName} is not available on this host ({ex.Message}) — skipping native soname test.");
+            TestPrerequisites.Missing($"{libName} is not available on this host ({ex.Message}) — native CUDA prerequisite missing.");
             return default;
         }
         catch (TypeInitializationException ex) when (ex.InnerException is DllNotFoundException)
         {
-            Assert.Ignore($"{libName} is not available on this host ({ex.InnerException.Message}) — skipping native soname test.");
+            TestPrerequisites.Missing($"{libName} is not available on this host ({ex.InnerException.Message}) — native CUDA prerequisite missing.");
             return default;
         }
     }
 
-    [Test, Platform(Include = "Linux"),
+    [Test, Category("NativeCuda"), Platform(Include = "Linux"),
      Description("Issue #36: libcudart.so.<MAJOR> must resolve through ldconfig — calls a no-device API to confirm.")]
     public void Linux_LibcudartSoname_Resolves()
     {
@@ -405,7 +388,7 @@ public class BugRegressionTests
         TestContext.Out.WriteLine($"cudaGetErrorString(cudaSuccess) → \"{msg}\"");
     }
 
-    [Test, Platform(Include = "Linux"),
+    [Test, Category("NativeCuda"), Platform(Include = "Linux"),
      Description("Issue #36: libnvrtc.so.<MAJOR> must resolve through ldconfig — calls nvrtcVersion to confirm.")]
     public void Linux_LibnvrtcSoname_Resolves()
     {
@@ -423,7 +406,7 @@ public class BugRegressionTests
         TestContext.Out.WriteLine($"nvrtcVersion → {major}.{minor}");
     }
 
-    [Test, Platform(Include = "Linux"),
+    [Test, Category("NativeCuda"), Platform(Include = "Linux"),
      Description("CUDA 13.2 explicit dispatch must select the new wrappers and still resolve the runtime/nvrtc libs.")]
     public void Cuda132_ExplicitDispatch_Works()
     {

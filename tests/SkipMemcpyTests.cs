@@ -21,6 +21,13 @@ public class SkipMemcpyTests
         marshaller = MainMemoryMarshaler.Create(HybridizerFlavor.OMP);
     }
 
+    [TearDown]
+    public void TearDown()
+    {
+        marshaller?.Free();
+        Assert.That(marshaller?.IsClean(), Is.True, "Native allocations remain after cleanup.");
+    }
+
     #region MarshalManagedToNative with skipMemcpy
 
     [Test]
@@ -481,7 +488,7 @@ public class InOutAttributeReflectionTests
 /// CUDA-specific tests that require a GPU and CUDA driver.
 /// Run with: dotnet test --filter "TestCategory=CUDA"
 /// </summary>
-[TestFixture, Category("CUDA")]
+[TestFixture, Category("CUDA"), Category("GPU"), NonParallelizable]
 public class CudaSkipMemcpyTests
 {
     private CudaMarshaler marshaller;
@@ -490,7 +497,7 @@ public class CudaSkipMemcpyTests
     public void OneTimeSetUp()
     {
         if (!cuda.IsCudaAvailable())
-            Assert.Ignore("CUDA is not available — skipping GPU tests");
+            TestPrerequisites.Missing("CUDA is not available — GPU prerequisite missing.");
     }
 
     [SetUp]
@@ -503,6 +510,7 @@ public class CudaSkipMemcpyTests
     public void TearDown()
     {
         marshaller?.Free();
+        Assert.That(marshaller?.IsClean(), Is.True, "Device allocations remain after cleanup.");
     }
 
     [Test]

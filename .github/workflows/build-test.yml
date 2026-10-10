@@ -1,39 +1,63 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
-name: .NET
-
+name: Runtime tests
 on:
   push:
-    branches: 
-      - '**'
   pull_request:
-    branches:
-      - '**'
-
+permissions:
+  contents: read
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  fast:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: Configure Git Safe Directory
-      run: sh -c "git config --global --add safe.directory $PWD"
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v5
-      with:
-        dotnet-version: '8.0.x'
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build Release
-      run: dotnet build --no-restore --configuration Release
-    - name: Test Release
-      run: dotnet test --configuration Release --no-build --verbosity normal --logger "trx;logfilename=CUDAImports.trx"
-    - name: Test Report
-      uses: dorny/test-reporter@v2
-      if: success() || failure()
-      with:
-        name: CUDAImports Tests
-        path: "tests/TestResults/CUDAImports.trx"
-        reporter: dotnet-trx
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '8.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify required reports and process timeout
+        run: python -B tools/test_run_tests.py
+      - name: Two clean fast runs
+        run: python tools/run-tests.py --suite fast --repeat 2 --results "${{ runner.temp }}/runtime-fast"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: runtime-fast-${{ matrix.os }}
+          path: |
+            ${{ runner.temp }}/runtime-fast/summary.json
+            ${{ runner.temp }}/runtime-fast/**/build.log
+            ${{ runner.temp }}/runtime-fast/**/test.log
+            ${{ runner.temp }}/runtime-fast/**/*.trx
+          if-no-files-found: error
+  native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '8.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Required Linux native stub tests
+        run: python tools/run-tests.py --suite native --repeat 2 --results "${{ runner.temp }}/runtime-native"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: runtime-native-linux
+          path: |
+            ${{ runner.temp }}/runtime-native/summary.json
+            ${{ runner.temp }}/runtime-native/**/build.log
+            ${{ runner.temp }}/runtime-native/**/test.log
+            ${{ runner.temp }}/runtime-native/**/*.trx
+          if-no-files-found: error
