@@ -377,22 +377,17 @@ namespace Hybridizer.Runtime.CUDAImports
                     // sort by offset
                     SortedDictionary<int, List<FieldInfo>> fields = new SortedDictionary<int, List<FieldInfo>>();
                    
-                    foreach (FieldInfo f in fis)
+                    // Only the order of the fields and which of them overlap matter below, and
+                    // the metadata gives both: the declared offset for an explicit layout, the
+                    // declaration order otherwise. Marshal.OffsetOf must not be asked: it refuses
+                    // a type holding an array or an object reference wherever COM is missing, so
+                    // the same struct had its fields on Windows and none on Linux
+                    // (hybridizer-io/hybridizer-software-suite#349).
+                    fis.Sort((a, b) => a.MetadataToken.CompareTo(b.MetadataToken));
+                    for (int declarationIndex = 0; declarationIndex < fis.Count; ++declarationIndex)
                     {
-                        int offset = 0;
-                        try
-                        {
-                            offset = Marshal.OffsetOf(t, f.Name).ToInt32();
-                        }
-                        catch (ArgumentException)
-                        {
-                            // This happens on DateTime, so if there is only one field, suppose that offset is 0
-                            if (fis.Count > 1)
-                            {
-                                Console.Out.WriteLine("Type {0} will not be marshalable using default marshaler", t.FullName);
-                                return new List<FieldDeclaration[]>();
-                            }
-                        }
+                        FieldInfo f = fis[declarationIndex];
+                        int offset = t.IsExplicitLayout ? f.GetCustomAttribute<FieldOffsetAttribute>().Value : declarationIndex;
                         if (fields.ContainsKey(offset))
                         {
                             fields[offset].Add(f);
